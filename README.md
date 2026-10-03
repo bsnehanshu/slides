@@ -22,4 +22,6 @@ Standalone diagrams live in [`architecture-diagrams/`](architecture-diagrams/), 
 ## Presenting
 Open the deck URL in a browser. `←`/`→` to navigate, `N` for speaker notes, `Cmd/Ctrl+P` to export to PDF.
 
-`bedrock-whiteboard/index.html` is generated: edit `slides.json` or `template.html`, then run `python3 bedrock-whiteboard/build.py`. It inlines the Excalidraw SVGs from `architecture-diagrams/` and `claude-desktop-bedrock-story/diagrams/`.
+`bedrock-whiteboard/index.html` is generated from `bedrock-whiteboard/deck.json` by the `excalidraw-story-deck` skill (`.claude/skills/excalidraw-story-deck/`). Edit the JSON, then run `python3 .claude/skills/excalidraw-story-deck/scripts/build.py bedrock-whiteboard`.
+
+GitHub Pages deploys from `.github/workflows/pages.yml` on every push to `main` (Settings → Pages → Source must be **GitHub Actions**).
