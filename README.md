@@ -16,6 +16,7 @@ https://bsnehanshu.github.io/slides/<deck-name>/
 Standalone diagrams live in [`architecture-diagrams/`](architecture-diagrams/), one folder each (SVG source + PNG export + README).
 - [claude-desktop-bedrock](architecture-diagrams/claude-desktop-bedrock/) — Claude Desktop on Amazon Bedrock (3P) reference architecture, fact-checked Oct 2026
 - [claude-on-bedrock](architecture-diagrams/claude-on-bedrock/) — Claude on Amazon Bedrock: runtime vs. mantle endpoints, cross-Region inference, quotas and residency, fact-checked Oct 2026
+- [claude-on-bedrock-excalidraw](architecture-diagrams/claude-on-bedrock-excalidraw/) — the same topic as 7 hand-drawn Excalidraw diagrams with the full write-up (compute stack, distribution, endpoints, endpoint picker, CRIS path, quota burndown, decode)
 
 ## Presenting
 Open the deck URL in a browser. `←`/`→` to navigate, `N` for speaker notes, `Cmd/Ctrl+P` to export to PDF.
