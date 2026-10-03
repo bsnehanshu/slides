@@ -1,0 +1,36 @@
+{
+ "title": "Bedrock Whiteboard",
+ "subtitle": "Two stories, drawn in Excalidraw. Come back here when you need the context.",
+ "stories": {
+  "A": "Story A · Claude Desktop on Bedrock",
+  "B": "Story B · Claude on Bedrock, under the hood"
+ },
+ "slides": [
+  {
+   "id": "a1",
+   "story": "A",
+   "eyebrow": "Story A · Step 1 of 5",
+   "title": "IT pushes the config",
+   "img": "diagrams/step1.svg",
+   "what": [
+    "Jamf or Intune pushes managed settings: plist domain <code>com.anthropic.claudefordesktop</code> on Mac, <code>HKLM\\SOFTWARE\\Policies\\Claude</code> on Windows",
+    "Sets provider = Bedrock, Region, models, allowed folders and the SSO start URL",
+    "Policy is spread over several keys (<code>allowedWorkspaceFolders</code>, <code>coworkEgressAllowedHosts</code>, …). There's no single sandbox switch"
+   ],
+   "say": "IT owns the setup. The user installs nothing extra and can't point the app at another provider."
+  },
+  {
+   "id": "b6",
+   "story": "B",
+   "eyebrow": "Story B · 6 of 7",
+   "title": "How a runtime request burns TPM quota",
+   "img": "diagrams/6-quota-burndown.excalidraw.svg",
+   "what": [
+    "<code>max_tokens</code> is reserved against quota when the request starts",
+    "Output tokens count 5× for Claude 3.7 and later",
+    "No RPM limit since May 2026. Runtime has one TPM per model; mantle splits input and output"
+   ],
+   "say": "Throttling comes from the reservation, not the bill. Set max_tokens near what you actually expect."
+  }
+ ]
+}
