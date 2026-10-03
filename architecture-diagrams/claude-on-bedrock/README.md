@@ -4,6 +4,9 @@
 
 - `architecture.svg`: editable source (hand-drawn, same style as `claude-desktop-bedrock`)
 - `architecture.png`: 2800×1860 export for slides
+- `architecture.excalidraw.svg`: the same diagram as a hand-drawn Excalidraw version. GitHub renders it, and excalidraw.com can open it for editing because the scene is embedded in the SVG.
+- `architecture.excalidraw`: the same scene as a plain Excalidraw file
+- `architecture.excalidraw.png`: 2800×1901 export of the Excalidraw version for slides
 - `diagrams/`: supporting diagrams. Each has a `.mmd` Mermaid source, a `.svg` and a 3× `.png` for slides. Rebuild with `npx -p @mermaid-js/mermaid-cli mmdc -i <file>.mmd -o <file>.png -s 3 -b white`.
 
 | File | Shows |
@@ -14,6 +17,10 @@
 | `diagrams/5-cris-path` | What moves with cross-Region inference, and what stays in the source region |
 | `diagrams/6-quota-burndown` | Runtime TPM reservation and 5× output burndown, with numbers |
 | `diagrams/7-decode` | Why decode is memory-bandwidth bound, and the levers |
+
+### Excalidraw version
+
+![Architecture, Excalidraw](architecture.excalidraw.svg)
 
 ## Changes from the previous diagram
 
