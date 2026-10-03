@@ -4,6 +4,15 @@
 
 - `architecture.svg`: editable source
 - `architecture.png`: 2800×1860 export for slides
+- `story-view.excalidraw`: simple 5-step whiteboard version for explaining the flow. Open it at excalidraw.com (File → Open) and edit live.
+
+### Story view, 5 steps
+
+1. MDM pushes the config to Claude Desktop.
+2. The user signs in to IAM Identity Center, which is federated to the corporate IdP.
+3. The app gets short-lived AWS creds.
+4. Prompts go straight from the laptop to Bedrock in your account.
+5. CloudTrail and CUR record every call per user: who, which model, what it cost.
 
 ## Changes from the previous diagram
 
