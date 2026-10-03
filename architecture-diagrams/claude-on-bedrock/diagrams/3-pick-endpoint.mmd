@@ -1,0 +1,11 @@
+flowchart TD
+  Q1{"Need server-side tools, web search,<br/>async, Projects or Workspaces?"}
+  Q1 -- yes --> M["bedrock-mantle<br/>Messages or Responses API"]
+  Q1 -- no --> R["bedrock-runtime<br/>default for new apps"]
+  M --> MC{"Also need structured outputs,<br/>Guardrails or CRIS?"}
+  MC -- yes --> SPLIT["Split: send those calls to runtime<br/>Converse or InvokeModel"]
+  MC -- no --> MD["Stay on mantle<br/>in-region only"]
+  R --> RES{"Data residency<br/>constraint?"}
+  RES -- "single region" --> IN["In-region ID or app inference profile<br/>check the model is served there"]
+  RES -- geography --> GEO["Geo profile<br/>apac. au. jp. us. eu."]
+  RES -- none --> GL["Global profile<br/>most throughput, lowest price"]

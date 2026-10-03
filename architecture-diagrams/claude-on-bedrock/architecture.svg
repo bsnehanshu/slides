@@ -1,0 +1,155 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 930" role="img" aria-label="Claude on Amazon Bedrock: an application calls one of two regional endpoints. bedrock-runtime carries cross-Region inference, Guardrails, prompt routing and structured outputs, and routes through in-region, geo or global inference profiles to serving fleets. bedrock-mantle carries server-side tools, web search, async inference, Projects and Workspaces, and serves in-region only. Logs, CloudTrail and pricing stay with the source region." font-family="'Amazon Ember', 'Helvetica Neue', Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#3F4B5B"/>
+    </marker>
+    <marker id="ahc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#B85C38"/>
+    </marker>
+  </defs>
+  <rect width="1400" height="930" fill="#FFFFFF"/>
+
+  <!-- Title -->
+  <text x="30" y="38" font-size="22" font-weight="700" fill="#232F3E">Claude on Amazon Bedrock · endpoints, routing and residency</text>
+  <text x="1370" y="38" font-size="11" fill="#5F6B7A" text-anchor="end">Checked against AWS Bedrock docs · Oct 2026</text>
+
+  <!-- ============ Left column: caller side ============ -->
+  <rect x="30" y="80" width="230" height="120" rx="6" fill="#FFFFFF" stroke="#232F3E" stroke-width="1.5"/>
+  <text x="145" y="110" font-size="14" font-weight="700" fill="#232F3E" text-anchor="middle">Application</text>
+  <text x="145" y="131" font-size="11" fill="#5F6B7A" text-anchor="middle">SDK · agent · Claude Code</text>
+  <text x="145" y="150" font-size="11" fill="#5F6B7A" text-anchor="middle">SigV4 or Bedrock API key</text>
+  <text x="145" y="169" font-size="11" fill="#5F6B7A" text-anchor="middle">PrivateLink from a VPC</text>
+  <text x="145" y="188" font-size="10.5" fill="#5F6B7A" text-anchor="middle" font-family="Menlo, Consolas, monospace">no NAT egress</text>
+
+  <rect x="30" y="240" width="230" height="150" rx="6" fill="#F7F8FA" stroke="#8D99A8"/>
+  <text x="45" y="263" font-size="13" font-weight="700" fill="#232F3E">Governance</text>
+  <text x="45" y="286" font-size="11" fill="#3F4B5B">IAM condition on</text>
+  <text x="45" y="302" font-size="10.5" fill="#3F4B5B" font-family="Menlo, Consolas, monospace">bedrock:InferenceProfileArn</text>
+  <text x="45" y="324" font-size="11" fill="#3F4B5B">SCP to enforce org-wide</text>
+  <text x="45" y="346" font-size="11" fill="#3F4B5B">Model access is per account:</text>
+  <text x="45" y="362" font-size="11" fill="#5F6B7A">"not available for this account"</text>
+  <text x="45" y="378" font-size="11" fill="#5F6B7A">is a model-access setting</text>
+
+  <rect x="30" y="430" width="230" height="120" rx="6" fill="#F7F8FA" stroke="#8D99A8"/>
+  <text x="45" y="453" font-size="13" font-weight="700" fill="#232F3E">Observability</text>
+  <text x="45" y="476" font-size="11" fill="#3F4B5B">CloudWatch · CloudTrail</text>
+  <text x="45" y="493" font-size="11" fill="#3F4B5B">Invocation logs</text>
+  <text x="45" y="516" font-size="11" font-weight="700" fill="#B85C38">Always in the source region,</text>
+  <text x="45" y="532" font-size="11" font-weight="700" fill="#B85C38">even with cross-Region inference</text>
+
+  <rect x="30" y="590" width="230" height="140" rx="6" fill="#F7F8FA" stroke="#8D99A8"/>
+  <text x="45" y="613" font-size="13" font-weight="700" fill="#232F3E">Cost attribution</text>
+  <text x="45" y="636" font-size="11" font-weight="700" fill="#3F4B5B">runtime</text>
+  <text x="45" y="652" font-size="11" fill="#5F6B7A">IAM principal · request tags</text>
+  <text x="45" y="668" font-size="11" fill="#5F6B7A">app inference profiles</text>
+  <text x="45" y="691" font-size="11" font-weight="700" fill="#3F4B5B">mantle</text>
+  <text x="45" y="707" font-size="11" fill="#5F6B7A">Projects · Workspaces</text>
+
+  <!-- ============ Middle: source region with two endpoints ============ -->
+  <rect x="300" y="80" width="600" height="700" rx="8" fill="#F7F8FA" stroke="#232F3E" stroke-width="1.5"/>
+  <text x="315" y="103" font-size="13" font-weight="700" fill="#232F3E">Source region · e.g. ap-southeast-2</text>
+
+  <!-- runtime panel -->
+  <rect x="320" y="118" width="560" height="322" rx="6" fill="#FFFFFF" stroke="#232F3E" stroke-width="1.5"/>
+  <text x="338" y="146" font-size="16" font-weight="700" fill="#232F3E">bedrock-runtime</text>
+  <rect x="738" y="130" width="128" height="22" rx="11" fill="#FBEFE9" stroke="#B85C38"/>
+  <text x="802" y="145" font-size="10.5" font-weight="700" fill="#8A3F22" text-anchor="middle">Default for new apps</text>
+  <text x="338" y="166" font-size="10.5" fill="#5F6B7A" font-family="Menlo, Consolas, monospace">bedrock-runtime.{region}.amazonaws.com</text>
+
+  <text x="338" y="196" font-size="10" font-weight="700" fill="#5F6B7A" letter-spacing="1">APIS</text>
+  <text x="338" y="214" font-size="12" fill="#232F3E">InvokeModel · Converse · Messages · Chat Completions</text>
+  <text x="338" y="231" font-size="12" fill="#232F3E">Responses <tspan fill="#5F6B7A">(sync only, default project, region-pinned)</tspan></text>
+
+  <text x="338" y="262" font-size="10" font-weight="700" fill="#B85C38" letter-spacing="1">ONLY ON RUNTIME</text>
+  <text x="338" y="280" font-size="12" fill="#232F3E">Cross-Region inference (CRIS) · Guardrails</text>
+  <text x="338" y="297" font-size="12" fill="#232F3E">Intelligent prompt routing · App inference profiles</text>
+  <text x="338" y="314" font-size="12" fill="#232F3E">Structured outputs <tspan fill="#5F6B7A">(use Converse or InvokeModel)</tspan></text>
+
+  <text x="338" y="345" font-size="10" font-weight="700" fill="#5F6B7A" letter-spacing="1">QUOTA</text>
+  <text x="338" y="363" font-size="12" fill="#232F3E">One per-model TPM, input + output combined. No RPM.</text>
+  <text x="338" y="380" font-size="12" fill="#232F3E">Claude 3.7+ output tokens burn quota at <tspan font-weight="700">5×</tspan></text>
+  <text x="338" y="397" font-size="12" fill="#232F3E"><tspan font-family="Menlo, Consolas, monospace" font-size="11">max_tokens</tspan> reserved up front, settled on completion</text>
+  <text x="338" y="424" font-size="11" fill="#5F6B7A">e.g. 1,000 in + 100 out → 1,500 TPM used, 1,100 tokens billed</text>
+
+  <!-- mantle panel -->
+  <rect x="320" y="460" width="560" height="240" rx="6" fill="#FFFFFF" stroke="#232F3E" stroke-width="1.5"/>
+  <text x="338" y="488" font-size="16" font-weight="700" fill="#232F3E">bedrock-mantle</text>
+  <text x="338" y="508" font-size="10.5" fill="#5F6B7A" font-family="Menlo, Consolas, monospace">bedrock-mantle.{region}.api.aws · short IDs, e.g. anthropic.claude-opus-4-8</text>
+
+  <text x="338" y="537" font-size="10" font-weight="700" fill="#5F6B7A" letter-spacing="1">APIS</text>
+  <text x="338" y="555" font-size="12" fill="#232F3E">Messages <tspan fill="#B85C38">(output_config.format → 400)</tspan> · Chat Completions · Responses (full)</text>
+
+  <text x="338" y="586" font-size="10" font-weight="700" fill="#B85C38" letter-spacing="1">ONLY ON MANTLE</text>
+  <text x="338" y="604" font-size="12" fill="#232F3E">Server-side and pre-configured tools · Web search</text>
+  <text x="338" y="621" font-size="12" fill="#232F3E">Async / background inference · Projects · Workspaces</text>
+
+  <text x="338" y="652" font-size="10" font-weight="700" fill="#5F6B7A" letter-spacing="1">QUOTA</text>
+  <text x="338" y="670" font-size="12" fill="#232F3E">Separate input and output TPM. No RPM. Fair-share queueing.</text>
+  <text x="338" y="687" font-size="12" fill="#232F3E">In-region only. Narrower model and region coverage.</text>
+
+  <!-- shared strip -->
+  <rect x="320" y="718" width="560" height="46" rx="6" fill="#EEF1F4" stroke="#8D99A8"/>
+  <text x="600" y="737" font-size="11" font-weight="700" fill="#232F3E" text-anchor="middle">Both endpoints</text>
+  <text x="600" y="754" font-size="11" fill="#3F4B5B" text-anchor="middle">Messages API · prompt caching · client-side tools · stateful conversations · same per-token price</text>
+
+  <!-- App -> endpoints -->
+  <path d="M260,160 H318" fill="none" stroke="#3F4B5B" stroke-width="1.5" marker-end="url(#ah)"/>
+  <path d="M260,185 H282 V580 H318" fill="none" stroke="#3F4B5B" stroke-width="1.5" marker-end="url(#ah)"/>
+
+  <!-- ============ Right: where inference runs ============ -->
+  <rect x="940" y="80" width="430" height="230" rx="6" fill="#FFFFFF" stroke="#232F3E" stroke-width="1.5"/>
+  <text x="958" y="106" font-size="14" font-weight="700" fill="#232F3E">Inference profile (runtime only)</text>
+  <line x1="958" y1="120" x2="1352" y2="120" stroke="#DDE2E6"/>
+  <text x="958" y="145" font-size="12" font-weight="700" fill="#232F3E">In-region</text>
+  <text x="1060" y="145" font-size="11" fill="#3F4B5B">source region only</text>
+  <text x="958" y="162" font-size="10.5" fill="#5F6B7A">Strictest residency, least headroom</text>
+  <line x1="958" y1="175" x2="1352" y2="175" stroke="#DDE2E6"/>
+  <text x="958" y="200" font-size="12" font-weight="700" fill="#232F3E">Geo</text>
+  <text x="1060" y="200" font-size="10.5" fill="#3F4B5B" font-family="Menlo, Consolas, monospace">apac. au. jp. us. eu.</text>
+  <text x="958" y="217" font-size="10.5" fill="#5F6B7A">Stays inside the geography</text>
+  <line x1="958" y1="230" x2="1352" y2="230" stroke="#DDE2E6"/>
+  <text x="958" y="255" font-size="12" font-weight="700" fill="#232F3E">Global</text>
+  <text x="1060" y="255" font-size="10.5" fill="#3F4B5B" font-family="Menlo, Consolas, monospace">global.</text>
+  <text x="958" y="272" font-size="10.5" fill="#5F6B7A">Any commercial region · most throughput</text>
+  <text x="958" y="289" font-size="10.5" font-weight="700" fill="#B85C38">≈10% below geo / in-region (Sonnet 4.5+)</text>
+
+  <!-- runtime -> profile -->
+  <path d="M880,200 H938" fill="none" stroke="#B85C38" stroke-width="2" marker-end="url(#ahc)"/>
+
+  <!-- Serving fleets -->
+  <rect x="940" y="350" width="430" height="350" rx="8" fill="#F7F8FA" stroke="#232F3E" stroke-width="1.5"/>
+  <text x="958" y="374" font-size="14" font-weight="700" fill="#232F3E">Serving fleets · Trainium and GPU</text>
+
+  <rect x="958" y="390" width="394" height="62" rx="4" fill="#FFFFFF" stroke="#8D99A8"/>
+  <text x="972" y="414" font-size="12" font-weight="700" fill="#232F3E">Source region</text>
+  <text x="972" y="433" font-size="11" fill="#5F6B7A">In-region profile · all mantle traffic</text>
+
+  <rect x="958" y="464" width="394" height="62" rx="4" fill="#FFFFFF" stroke="#8D99A8"/>
+  <text x="972" y="488" font-size="12" font-weight="700" fill="#232F3E">Other region in the geography</text>
+  <text x="972" y="507" font-size="11" fill="#5F6B7A">Geo or global profile</text>
+
+  <rect x="958" y="538" width="394" height="62" rx="4" fill="#FFFFFF" stroke="#8D99A8"/>
+  <text x="972" y="562" font-size="12" font-weight="700" fill="#232F3E">Any supported commercial region</text>
+  <text x="972" y="581" font-size="11" fill="#5F6B7A">Global profile only</text>
+
+  <text x="958" y="628" font-size="11" fill="#3F4B5B">Weights read-only in HBM · KV cache per request</text>
+  <text x="958" y="646" font-size="11" fill="#3F4B5B">Decode is memory-bandwidth bound, so long</text>
+  <text x="958" y="664" font-size="11" fill="#3F4B5B">context and big max_tokens cost more capacity</text>
+  <text x="958" y="686" font-size="10.5" fill="#5F6B7A">Fleet placement inside a region is not published</text>
+
+  <!-- profile -> fleets -->
+  <path d="M1155,310 V348" fill="none" stroke="#B85C38" stroke-width="2" marker-end="url(#ahc)"/>
+  <text x="1165" y="334" font-size="10.5" fill="#8A3F22">routes to available capacity</text>
+
+  <!-- mantle -> source region fleet -->
+  <path d="M880,560 H918 V421 H956" fill="none" stroke="#3F4B5B" stroke-width="1.5" marker-end="url(#ah)"/>
+  <text x="912" y="490" font-size="10" fill="#3F4B5B" text-anchor="middle" transform="rotate(-90 912 490)">in-region only</text>
+
+  <!-- ============ Footer ============ -->
+  <line x1="30" y1="805" x2="1370" y2="805" stroke="#DDE2E6"/>
+  <text x="30" y="832" font-size="12" font-weight="700" fill="#232F3E">Pick an endpoint</text>
+  <text x="30" y="852" font-size="12" fill="#3F4B5B">Start on bedrock-runtime. Send a workload to mantle only when it needs server-side tools, web search, async inference, Projects or Workspaces.</text>
+  <text x="30" y="870" font-size="12" fill="#3F4B5B">Need structured outputs, Guardrails or cross-Region inference on that workload too? Split those calls back to runtime.</text>
+  <text x="30" y="898" font-size="11" fill="#5F6B7A">Cross-Region inference moves processing, not the account boundary: the request enters and returns through the source region, and logs and billing stay there.</text>
+  <text x="30" y="915" font-size="11" fill="#5F6B7A">Capabilities change often. Check the Bedrock endpoints page and per-model endpoint availability before quoting to a customer.</text>
+</svg>

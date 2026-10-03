@@ -1,0 +1,7 @@
+flowchart LR
+  P["Prefill<br/>whole prompt in parallel<br/>compute bound"] --> KV[("KV cache<br/>in HBM")]
+  KV --> D["Decode step<br/>read active weights + KV<br/>to emit one token"]
+  D --> TOK["Token"]
+  TOK -->|append, repeat| D
+  D -.-> X["Low arithmetic intensity<br/>cores wait on HBM"]
+  X -.-> L["Levers: batching · prompt caching<br/>disaggregated prefill/decode<br/>shorter context"]
