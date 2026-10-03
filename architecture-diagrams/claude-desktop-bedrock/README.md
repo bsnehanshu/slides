@@ -4,9 +4,14 @@
 
 - `architecture.svg`: editable source
 - `architecture.png`: 2800×1860 export for slides
-- `story-view.excalidraw`: simple 5-step whiteboard version for explaining the flow. Open it at excalidraw.com (File → Open) and edit live.
+- `story-view.excalidraw.svg`: simple 5-step whiteboard version for explaining the flow. GitHub renders it, and excalidraw.com can open it for editing because the scene is embedded in the SVG.
+- `story-view.excalidraw`: the same scene as a plain Excalidraw file.
+- Step-by-step slides: [`claude-desktop-bedrock-story`](../../claude-desktop-bedrock-story/)
 
 ### Story view, 5 steps
+
+![Story view](story-view.excalidraw.svg)
+
 
 1. MDM pushes the config to Claude Desktop.
 2. The user signs in to IAM Identity Center, which is federated to the corporate IdP.

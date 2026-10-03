@@ -10,6 +10,7 @@ https://bsnehanshu.github.io/slides/<deck-name>/
 
 ## Decks
 - [aws-datadog-gameday-intro](https://bsnehanshu.github.io/slides/aws-datadog-gameday-intro/) — AWS × Datadog Game Day, intro and mechanics (template — names/venue redacted)
+- [claude-desktop-bedrock-story](https://bsnehanshu.github.io/slides/claude-desktop-bedrock-story/) — Claude Desktop on Amazon Bedrock, 5-slide step-by-step build of the story view
 
 ## Architecture diagrams
 Standalone diagrams live in [`architecture-diagrams/`](architecture-diagrams/), one folder each (SVG source + PNG export + README).
