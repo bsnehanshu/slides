@@ -11,7 +11,7 @@ The output is a deck for reference and explaining, not a pitch. Every slide answ
 
 - Split the topic into 1–3 **stories**. A story is a flow someone can follow ("how a request gets from laptop to model") or a set of related questions ("how Bedrock serves Claude").
 - Give each story 4–8 slides. Open a flow story with one **overview** slide that shows the whole picture, then one slide per numbered step.
-- One idea per diagram. If a diagram needs more than ~6 boxes, split it. Details such as config keys, edge cases and gotchas go in the bullets, not on the drawing.
+- One idea per diagram, at most ~6 boxes and ~4 short lines per box. If a diagram turns into a feature table (like a full endpoint comparison), draw a short version for the deck and keep the detailed one in the README as the reference. Details such as config keys, edge cases and gotchas go in the bullets, not on the drawing.
 - Fact-check claims against current docs before drawing. Put sources in a README next to the diagrams.
 
 ## 2. Draw the diagrams

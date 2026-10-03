@@ -85,6 +85,19 @@ D["3-endpoints"] = () => {
   return s;
 };
 
+// 3s. Endpoints, simplified for the story deck ------------------------------
+D["3-endpoints-simple"] = () => {
+  const s = new Scene();
+  s.header(0, -150, "3 · Two Bedrock endpoints for Claude", "Same price. Pick by the features you need.");
+  s.box("app", 440, 0, "Your application", { w: 300, h: 64, color: C.gray, fs: 22 });
+  s.card("rt", 0, 170, "bedrock-runtime", "the default\n\n✓ cross-Region inference\n✓ Guardrails\n✓ structured outputs", { w: 500, h: 250, color: C.blue, tfs: 28, bfs: 21 });
+  s.card("mt", 680, 170, "bedrock-mantle", "for agent features\n\n✓ server-side tools, web search\n✓ long-running (async) jobs\n✗ in-region only, fewer models", { w: 500, h: 250, color: C.purple, tfs: 28, bfs: 21 });
+  s.arrow("app", "b", "rt", "t", { ta: 0.3 }); s.arrow("app", "b", "mt", "t", { ta: 0.7 });
+  s.card("both", 0, 500, "Same on both", "Anthropic Messages API · same per-token price · served on AWS", { w: 1180, color: C.green, tfs: 22, bfs: 19 });
+  s.arrow("rt", "b", "both", "t", { tb: 250 / 1180 }); s.arrow("mt", "b", "both", "t", { tb: 930 / 1180 });
+  return s;
+};
+
 // 4. Picking an endpoint and profile ---------------------------------------
 D["4-pick-endpoint"] = () => {
   const s = new Scene();

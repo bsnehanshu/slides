@@ -2,7 +2,7 @@ import { chromium } from "playwright-core";
 import fs from "fs";
 const outDir = process.argv[2];
 fs.mkdirSync(outDir, { recursive: true });
-const browser = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium" });
+const browser = await chromium.launch({ executablePath: process.env.CHROME || "/opt/pw-browsers/chromium" });
 const page = await browser.newPage();
 page.on("console", m => { if (m.type()==="error") console.error("console:", m.text()); });
 page.on("pageerror", e => console.error("pageerror:", e.message));

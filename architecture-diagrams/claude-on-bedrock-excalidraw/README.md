@@ -24,6 +24,12 @@ Fan-in and fan-out are independent. Multi-cloud compute is a supply hedge, not a
 
 ## 3. Bedrock endpoints for Claude
 
+Short version, for explaining:
+
+![Endpoints, simple](diagrams/3-endpoints-simple.excalidraw.svg)
+
+Full version, for reference:
+
 ![Endpoints](diagrams/3-endpoints.excalidraw.svg)
 
 Bedrock has two inference endpoints. The Anthropic Messages API runs on both. They differ in which Bedrock features come with the endpoint. AWS recommends `bedrock-runtime` for new applications.
