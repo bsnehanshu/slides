@@ -9,7 +9,7 @@ https://bsnehanshu.github.io/slides/<deck-name>/
 ```
 
 ## Decks
-- [bedrock-whiteboard](https://bsnehanshu.github.io/slides/bedrock-whiteboard/) — **start here.** Both Excalidraw stories in one click-through reference deck: Claude Desktop on Bedrock (5 steps) and Claude on Bedrock under the hood (7 diagrams), each with notes and a "say it like this" line. Deep-link a slide with `#a3`, `#b5`, etc.
+- [bedrock-whiteboard](https://bsnehanshu.github.io/slides/bedrock-whiteboard/) — **start here.** Three Excalidraw stories in one click-through reference deck: Claude Desktop on Bedrock (5 steps), Claude on Bedrock under the hood (7 diagrams), and Claude in ANZ from silicon to invoice (9 diagrams, L300–400), each with notes and a "say it like this" line. Deep-link a slide with `#a3`, `#b5`, etc.
 - [aws-datadog-gameday-intro](https://bsnehanshu.github.io/slides/aws-datadog-gameday-intro/) — AWS × Datadog Game Day, intro and mechanics (template — names/venue redacted)
 - [claude-desktop-bedrock-story](https://bsnehanshu.github.io/slides/claude-desktop-bedrock-story/) — Claude Desktop on Amazon Bedrock, 5-slide step-by-step build of the story view
 
@@ -17,6 +17,7 @@ https://bsnehanshu.github.io/slides/<deck-name>/
 Standalone diagrams live in [`architecture-diagrams/`](architecture-diagrams/), one folder each (SVG source + PNG export + README).
 - [claude-desktop-bedrock](architecture-diagrams/claude-desktop-bedrock/) — Claude Desktop on Amazon Bedrock (3P) reference architecture, fact-checked Oct 2026
 - [claude-on-bedrock](architecture-diagrams/claude-on-bedrock/) — Claude on Amazon Bedrock: runtime vs. mantle endpoints, cross-Region inference, quotas and residency, fact-checked Oct 2026
+- [claude-anz-infra-excalidraw](architecture-diagrams/claude-anz-infra-excalidraw/) — Claude in Australia and New Zealand, L300–400: training vs serving silicon, how weights reach a Region, prefill/decode and HBM, prompt caching, sizing, APIs, AU/NZ data residency, tokens to dollars
 - [claude-on-bedrock-excalidraw](architecture-diagrams/claude-on-bedrock-excalidraw/) — the same topic as 7 hand-drawn Excalidraw diagrams with the full write-up (compute stack, distribution, endpoints, endpoint picker, CRIS path, quota burndown, decode)
 
 ## Presenting

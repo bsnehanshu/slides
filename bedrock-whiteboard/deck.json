@@ -1,9 +1,10 @@
 {
  "title": "Bedrock Whiteboard",
- "subtitle": "Two stories, drawn in Excalidraw. Come back here when you need the context.",
+ "subtitle": "Three stories, drawn in Excalidraw. Come back here when you need the context.",
  "stories": {
   "A": "Story A · Claude Desktop on Bedrock",
-  "B": "Story B · Claude on Bedrock, under the hood"
+  "B": "Story B · Claude on Bedrock, under the hood",
+  "C": "Story C · Claude in ANZ, silicon to invoice (L300–400)"
  },
  "slides": [
   {
@@ -174,6 +175,123 @@
     "Longer context grows the KV cache. MoE cuts active params, not resident memory"
    ],
    "say": "Generating text is a memory-bandwidth problem. That's why batching and long context drive cost."
+  },
+  {
+   "id": "c0",
+   "story": "C",
+   "eyebrow": "Story C · Overview",
+   "title": "Claude in ANZ, end to end",
+   "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c0-overview.excalidraw.svg",
+   "what": [
+    "Trained outside your Region, on Trainium2, Google TPUs and NVIDIA GPUs. Sydney only runs inference",
+    "The checkpoint lands in a Bedrock-owned model deployment account in each Region. Anthropic has no access to it",
+    "Your app calls <code>bedrock-runtime.ap-southeast-2</code>. Logs, metrics and the bill stay in your account"
+   ],
+   "say": "Anthropic builds the model, AWS runs it in your Region, and your data never goes to Anthropic."
+  },
+  {
+   "id": "c1",
+   "story": "C",
+   "eyebrow": "Story C · 1 of 8",
+   "title": "Where Claude is trained vs where it is served",
+   "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c1-silicon.excalidraw.svg",
+   "what": [
+    "Training: Project Rainier (over 1M Trainium2 chips, Indiana), up to 1M Google TPUs, and NVIDIA GPUs",
+    "Serving on Bedrock: Trainium2 and NVIDIA GPU instances. AWS doesn't publish which chip serves which model. Inferentia has no public link to Claude",
+    "HBM per chip: Trainium2 96 GB, H100 80 GB, H200 141 GB, B200 192 GB"
+   ],
+   "say": "Training happens once, somewhere big. Your Region only runs inference."
+  },
+  {
+   "id": "c2",
+   "story": "C",
+   "eyebrow": "Story C · 2 of 8",
+   "title": "How the model lands in Sydney, Melbourne and Auckland",
+   "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c2-weights-to-region.excalidraw.svg",
+   "what": [
+    "Each Region has one Bedrock-owned model deployment account per model provider",
+    "Anthropic can't reach those accounts, their logs, or your prompts. Bedrock doesn't store prompts or use them for training",
+    "How weights are copied between Regions, replica counts and AZ placement aren't published"
+   ],
+   "say": "The weights are a copy AWS operates. The model provider can't see anything you send."
+  },
+  {
+   "id": "c3",
+   "story": "C",
+   "eyebrow": "Story C · 3 of 8",
+   "title": "Inside one request: prefill, then decode",
+   "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c3-inside-a-request.excalidraw.svg",
+   "what": [
+    "Prefill runs the whole prompt in parallel and writes the KV cache into HBM. It's compute bound",
+    "Decode makes one token per step and re-reads weights plus KV cache from HBM every time. It's memory-bandwidth bound",
+    "Large models are sharded across 8–64 chips over NVLink or NeuronLink"
+   ],
+   "say": "The first token is a compute problem. Every token after that is a memory problem."
+  },
+  {
+   "id": "c4",
+   "story": "C",
+   "eyebrow": "Story C · 4 of 8",
+   "title": "Prompt caching: where the cache actually lives",
+   "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c4-prompt-caching.excalidraw.svg",
+   "what": [
+    "The cache is the prefix's KV tensors, kept in accelerator HBM after the request ends. It isn't in the compute cores",
+    "TTL is 5 minutes by default, or 1 hour on Sonnet 4.5, Haiku 4.5 and Opus 4.5. Minimum 4,096 tokens per checkpoint on those models",
+    "Write costs 1.25× (5 min) or 2× (1 h) the input price, and a read costs 0.1×. With CRIS, expect more cache writes"
+   ],
+   "say": "Same prefix inside the TTL means you skip most of the work and pay a tenth."
+  },
+  {
+   "id": "c5",
+   "story": "C",
+   "eyebrow": "Story C · 5 of 8",
+   "title": "Sizing: chips, memory, power, money",
+   "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c5-sizing.excalidraw.svg",
+   "what": [
+    "Illustrative only: Claude's parameter count isn't published. This uses a made-up 400B model at FP8",
+    "8 × H200 = 1,128 GB HBM. 400 GB of weights leaves ~700 GB of KV cache, which is ~17 full 200K-token sessions",
+    "~10 kW per node and ~$46K a month on-demand (p5en, us-east-1), before redundancy"
+   ],
+   "say": "You're not buying GPUs. You're buying a slice of a fleet AWS keeps full."
+  },
+  {
+   "id": "c6",
+   "story": "C",
+   "eyebrow": "Story C · 6 of 8",
+   "title": "How customers consume it: APIs and the token meter",
+   "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c6-consume.excalidraw.svg",
+   "what": [
+    "Runtime: InvokeModel, InvokeModelWithResponseStream, Converse, ConverseStream, CountTokens, plus Messages and Chat Completions",
+    "Mantle: Messages, Chat Completions and Responses, in-region only. Batch goes through the <code>bedrock</code> control plane",
+    "Quota counts input + 5 × output and reserves <code>max_tokens</code>. The bill counts real tokens"
+   ],
+   "say": "Throttling is about the quota. Cost is about the bill. They're metered differently."
+  },
+  {
+   "id": "c7",
+   "story": "C",
+   "eyebrow": "Story C · 7 of 8",
+   "title": "Data residency: what crosses the AU and NZ border",
+   "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c7-residency.excalidraw.svg",
+   "what": [
+    "<code>au.</code> routes between Sydney and Melbourne, and since the NZ launch Auckland too. Confirm with <code>aws bedrock get-inference-profile</code>",
+    "Prompt and completion cross the border during processing. Logs, metrics and the bill stay in the source Region",
+    "<code>global.</code> can go anywhere. Lock the choice down with an IAM condition on <code>bedrock:InferenceProfileArn</code> plus an SCP"
+   ],
+   "say": "Pick the profile that matches your border, then make it impossible to pick another."
+  },
+  {
+   "id": "c8",
+   "story": "C",
+   "eyebrow": "Story C · 8 of 8",
+   "title": "Tokens to dollars: a Sydney team of 1,000",
+   "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c8-tokens-to-dollars.excalidraw.svg",
+   "what": [
+    "1,000 devs × 50 requests × (20K in + 1K out) = 1.0B input and 50M output tokens a day",
+    "Sonnet 4.5 on <code>au.</code>: ~$4,125 a day without caching, ~$1,830 with 80% cache reads",
+    "Quota: ~2.6M TPM on average (input + 5 × output). Plan 2–3× for peaks"
+   ],
+   "say": "Caching roughly halves this bill. Tight max_tokens protects your quota."
   }
  ]
 }
