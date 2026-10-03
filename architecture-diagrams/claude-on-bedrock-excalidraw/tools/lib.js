@@ -132,7 +132,13 @@ class Scene {
       startBinding: null, endBinding: null, startArrowhead: null, endArrowhead: null });
     return e;
   }
+  // Footnote under the diagram; left out of the slide-deck export, where the slide text carries it.
+  note(x, y, str, o = {}) {
+    if (window.DECK) return null;
+    return this.text(x, y, str, o);
+  }
   header(x, y, title, sub) {
+    if (window.DECK) return;
     this.text(x, y, title, { fs: 34, id: "title" });
     if (sub) this.text(x, y + 48, sub, { fs: 20, color: C.muted, id: "subtitle" });
   }

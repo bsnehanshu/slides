@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Claude on Amazon Bedrock — How It Works</title>
+<link rel="stylesheet" href="colors_and_type.css">
+<script src="deck-stage.js"></script>
+<style>
+  html, body { margin: 0; background: #000; }
+  deck-stage { --slide-width: 1920px; --slide-height: 1080px; }
+
+  /* ---- Shared slide chrome ---- */
+  .slide {
+    position: relative; width: 1920px; height: 1080px; overflow: hidden;
+    font-family: var(--aws-font-display);
+    background: var(--aws-white); color: var(--aws-gray-850);
+  }
+  .slide h1, .slide h2, .slide p { margin: 0; }
+  .edge-strip { position: absolute; left: 0; top: 0; bottom: 0; width: 10px; background: var(--aws-orange-400); }
+  .logo-tr { position: absolute; top: 73px; right: 80px; height: 60px; width: auto; }
+
+  .eyebrow {
+    font-family: var(--aws-font-mono); font-size: 22px; font-weight: 400;
+    text-transform: uppercase; letter-spacing: 0.08em; color: var(--aws-gray-550);
+  }
+  .title-tab { position: absolute; top: 120px; left: 80px; width: 8px; height: 56px; background: var(--aws-orange-400); }
+  .title-block { position: absolute; top: 80px; left: 112px; right: 400px; }
+  .h-title { font-size: 64px; line-height: 1.1; font-weight: 400; letter-spacing: -0.005em; margin-top: 12px; }
+
+  .slide-no {
+    position: absolute; right: 80px; bottom: 60px; font-family: var(--aws-font-mono);
+    font-size: 16px; letter-spacing: 0.08em; color: var(--aws-gray-500);
+  }
+
+  /* ---- Progress dots ---- */
+  .progress { position: absolute; left: 112px; bottom: 60px; display: flex; gap: 14px; align-items: center; }
+  .progress span {
+    width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--aws-gray-300);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--aws-font-mono); font-size: 18px; color: var(--aws-gray-500);
+  }
+  .progress span.done { background: var(--aws-gray-200); border-color: var(--aws-gray-200); color: var(--aws-gray-600); }
+  .progress span.now { background: var(--aws-orange-400); border-color: var(--aws-orange-400); color: var(--aws-gray-850); font-weight: 500; }
+
+  /* ---- Diagram + explainer ---- */
+  .diagram {
+    position: absolute; left: 60px; top: 230px; width: 1240px; height: 720px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .diagram img { max-width: 100%; max-height: 100%; }
+  .panel { position: absolute; left: 1340px; right: 80px; top: 270px; }
+  .panel-label {
+    font-family: var(--aws-font-mono); font-size: 18px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--aws-gray-500); margin-bottom: 14px;
+  }
+  .panel ul { margin: 0 0 40px; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 14px; }
+  .panel li { font-size: 25px; line-height: 1.35; padding-left: 28px; position: relative; }
+  .panel li::before { content: ""; position: absolute; left: 0; top: 13px; width: 10px; height: 10px; border-radius: 50%; background: var(--aws-orange-400); }
+  .panel code { font-family: var(--aws-font-mono); font-size: 21px; background: var(--aws-gray-100); padding: 1px 6px; border-radius: 4px; }
+  .why {
+    background: var(--aws-gray-850); color: var(--aws-white); border-radius: var(--aws-radius-lg);
+    padding: 26px 30px; border-left: 8px solid var(--aws-orange-400);
+  }
+  .why p { font-size: 24px; line-height: 1.4; }
+  .why .panel-label { color: var(--aws-orange-400); margin-bottom: 10px; }
+  .why code { font-family: var(--aws-font-mono); font-size: 21px; background: rgba(255,255,255,0.14); color: inherit; padding: 1px 6px; border-radius: 4px; }
+</style>
+<script type="application/json" id="speaker-notes">
+[
+  "Set the frame before anything Bedrock-specific. The bottom of the stack is shared by the whole industry: TSMC fabs, HBM from three memory vendors, and accelerators from Nvidia, Google and AWS. Training isn't a one-off: each checkpoint is paid once, but every new model generation pays again, and RL post-training is a large repeated cost. Inference is the part customers pay for, and it scales with usage. Tee up the last slide: decode is limited by memory bandwidth, not compute.",
+  "Common objection: 'Anthropic also uses Google, so does my data go there?' No. Fan-in and fan-out are independent. Multi-cloud training hedges Anthropic's compute supply. Once the weights ship, each platform serves them on its own infrastructure. A Bedrock request is served on AWS Trainium and GPU fleets from start to finish.",
+  "Both endpoints serve the Anthropic Messages API. Capabilities attach to the endpoint, not the API. Runtime is AWS's stated default for new apps and is the only one with CRIS, Guardrails, intelligent prompt routing and application inference profiles. Mantle adds server-side and pre-configured tools including web search, async inference, and Projects and Workspaces, but serves in-region only and covers fewer models. Quotas differ too: runtime has one TPM per model covering input and output; mantle meters input and output separately with fair-share queueing. Neither enforces RPM any more.",
+  "Walk the tree left to right. Most customers end up on runtime, and the real decision is the inference profile. In-region is the strictest residency, but check the model is actually served there. Geo keeps processing in the geography, which is the usual answer for APAC regulated customers: au. or apac. Global gives the most throughput and is the baseline price. Don't leave it to developers: enforce it with IAM and an SCP.",
+  "This replaces the old 'response stays in region unless CRIS' framing, which was wrong. With CRIS, the app always talks to its source-region endpoint. The profile routes the inference to a region with capacity, and the tokens come back through the source. Logs and pricing stay with the source region. Geo profiles keep processing inside the geography; global can use any commercial region. Pricing: global is the baseline, and geo and in-region cost about 10% more for Sonnet 4.5 and later. AWS doesn't publish how fleets are placed across AZs, so don't draw that.",
+  "This is the most common cause of 'we're throttled but barely using anything'. Runtime holds input plus max_tokens of quota as soon as the request starts, then settles to input plus five times the actual output. Billing is just input plus output. So a default max_tokens of 8k on short answers ties up quota you never use. Fix the client before asking for a quota increase.",
+  "Close on why inference costs what it does. Prefill processes the prompt in parallel and is compute bound. Decode emits one token at a time, rereading the weights and KV cache each time, so it's memory-bandwidth bound. That's why batching helps, why prompt caching is such a big win (it skips prefill for repeated prefixes), and why providers split prefill and decode onto separate hardware. MoE reduces the active parameters per token but not resident memory: every expert stays loaded."
+]
+</script>
+</head>
+<body>
+
+<deck-stage>
+
+  <!-- 1. Compute stack -->
+  <section class="slide" data-label="1 · Compute stack">
+    <div class="edge-strip"></div>
+    <div class="title-tab"></div>
+    <div class="title-block">
+      <div class="eyebrow">Claude on Amazon Bedrock · 1 of 7</div>
+      <h1 class="h-title">Where Claude's compute comes from</h1>
+    </div>
+    <img class="logo-tr" src="assets/aws-logo-gray850.svg" alt="AWS">
+    <div class="diagram"><img src="diagrams/1-compute-stack.excalidraw.svg" alt="Where Claude&#x27;s compute comes from"></div>
+    <div class="panel">
+      <div class="panel-label">What happens</div>
+      <ul>
+        <li>Silicon: TSMC fabs, HBM from SK Hynix, Samsung and Micron, accelerators from Nvidia, Google and AWS</li>
+        <li>Training runs once per checkpoint and again for every model generation</li>
+        <li>Inference runs all the time and grows with usage</li>
+      </ul>
+      <div class="why">
+        <div class="panel-label">Why it matters</div>
+        <p>Training is a periodic cost. Inference is the bill that grows with your usage.</p>
+      </div>
+    </div>
+    <div class="progress"><span class="now">1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span></div>
+    <div class="slide-no">01 / 07</div>
+  </section>
+
+  <!-- 2. Distribution -->
+  <section class="slide" data-label="2 · Distribution">
+    <div class="edge-strip"></div>
+    <div class="title-tab"></div>
+    <div class="title-block">
+      <div class="eyebrow">Claude on Amazon Bedrock · 2 of 7</div>
+      <h1 class="h-title">Trained on many clouds, served on AWS</h1>
+    </div>
+    <img class="logo-tr" src="assets/aws-logo-gray850.svg" alt="AWS">
+    <div class="diagram"><img src="diagrams/2-distribution.excalidraw.svg" alt="Trained on many clouds, served on AWS"></div>
+    <div class="panel">
+      <div class="panel-label">What happens</div>
+      <ul>
+        <li>Claude is trained on Trainium, Google TPU and Nvidia GPU</li>
+        <li>The same weights ship to the Claude API, Bedrock, Vertex AI and Microsoft Foundry</li>
+        <li>A Bedrock call runs on AWS end to end</li>
+      </ul>
+      <div class="why">
+        <div class="panel-label">Why it matters</div>
+        <p>Multi-cloud is Anthropic's supply hedge, not your request path. Requests never hop providers.</p>
+      </div>
+    </div>
+    <div class="progress"><span class="done">1</span><span class="now">2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span></div>
+    <div class="slide-no">02 / 07</div>
+  </section>
+
+  <!-- 3. Endpoints -->
+  <section class="slide" data-label="3 · Endpoints">
+    <div class="edge-strip"></div>
+    <div class="title-tab"></div>
+    <div class="title-block">
+      <div class="eyebrow">Claude on Amazon Bedrock · 3 of 7</div>
+      <h1 class="h-title">Two Bedrock endpoints, same price</h1>
+    </div>
+    <img class="logo-tr" src="assets/aws-logo-gray850.svg" alt="AWS">
+    <div class="diagram"><img src="diagrams/3-endpoints.excalidraw.svg" alt="Two Bedrock endpoints, same price"></div>
+    <div class="panel">
+      <div class="panel-label">What happens</div>
+      <ul>
+        <li><code>bedrock-runtime</code>: the default. Cross-Region inference, Guardrails, prompt routing, structured outputs</li>
+        <li><code>bedrock-mantle</code>: server-side tools, web search, async, Projects and Workspaces</li>
+        <li>Mantle's Messages API rejects structured outputs with a 400</li>
+      </ul>
+      <div class="why">
+        <div class="panel-label">Why it matters</div>
+        <p>Per-token price is the same on both. Choose on capability, and start on runtime.</p>
+      </div>
+    </div>
+    <div class="progress"><span class="done">1</span><span class="done">2</span><span class="now">3</span><span>4</span><span>5</span><span>6</span><span>7</span></div>
+    <div class="slide-no">03 / 07</div>
+  </section>
+
+  <!-- 4. Picking -->
+  <section class="slide" data-label="4 · Picking">
+    <div class="edge-strip"></div>
+    <div class="title-tab"></div>
+    <div class="title-block">
+      <div class="eyebrow">Claude on Amazon Bedrock · 4 of 7</div>
+      <h1 class="h-title">Pick the endpoint, then the profile</h1>
+    </div>
+    <img class="logo-tr" src="assets/aws-logo-gray850.svg" alt="AWS">
+    <div class="diagram"><img src="diagrams/4-pick-endpoint.excalidraw.svg" alt="Pick the endpoint, then the profile"></div>
+    <div class="panel">
+      <div class="panel-label">What happens</div>
+      <ul>
+        <li>Need server-side tools, web search, async or Workspaces? Use mantle</li>
+        <li>Otherwise use runtime, then pick by residency: in-region, geo (<code>apac.</code> <code>au.</code> <code>jp.</code> …) or <code>global.</code></li>
+        <li>Need both? Split the workload across the two endpoints</li>
+      </ul>
+      <div class="why">
+        <div class="panel-label">Why it matters</div>
+        <p>Enforce the profile with an IAM condition on <code>bedrock:InferenceProfileArn</code>, plus an SCP.</p>
+      </div>
+    </div>
+    <div class="progress"><span class="done">1</span><span class="done">2</span><span class="done">3</span><span class="now">4</span><span>5</span><span>6</span><span>7</span></div>
+    <div class="slide-no">04 / 07</div>
+  </section>
+
+  <!-- 5. CRIS -->
+  <section class="slide" data-label="5 · CRIS">
+    <div class="edge-strip"></div>
+    <div class="title-tab"></div>
+    <div class="title-block">
+      <div class="eyebrow">Claude on Amazon Bedrock · 5 of 7</div>
+      <h1 class="h-title">Cross-Region inference: what moves</h1>
+    </div>
+    <img class="logo-tr" src="assets/aws-logo-gray850.svg" alt="AWS">
+    <div class="diagram"><img src="diagrams/5-cris-path.excalidraw.svg" alt="Cross-Region inference: what moves"></div>
+    <div class="panel">
+      <div class="panel-label">What happens</div>
+      <ul>
+        <li>The request enters and returns through the source region</li>
+        <li>Only the model runs in the destination region</li>
+        <li>CloudWatch, CloudTrail, invocation logs and the price stay with the source region</li>
+      </ul>
+      <div class="why">
+        <div class="panel-label">Why it matters</div>
+        <p>Residency is a profile choice you can enforce, not a code change.</p>
+      </div>
+    </div>
+    <div class="progress"><span class="done">1</span><span class="done">2</span><span class="done">3</span><span class="done">4</span><span class="now">5</span><span>6</span><span>7</span></div>
+    <div class="slide-no">05 / 07</div>
+  </section>
+
+  <!-- 6. Quotas -->
+  <section class="slide" data-label="6 · Quotas">
+    <div class="edge-strip"></div>
+    <div class="title-tab"></div>
+    <div class="title-block">
+      <div class="eyebrow">Claude on Amazon Bedrock · 6 of 7</div>
+      <h1 class="h-title">Quota is reserved before you're billed</h1>
+    </div>
+    <img class="logo-tr" src="assets/aws-logo-gray850.svg" alt="AWS">
+    <div class="diagram"><img src="diagrams/6-quota-burndown.excalidraw.svg" alt="Quota is reserved before you&#x27;re billed"></div>
+    <div class="panel">
+      <div class="panel-label">What happens</div>
+      <ul>
+        <li>Runtime reserves input + <code>max_tokens</code> when the request starts</li>
+        <li>Output tokens count 5× against TPM (Claude 3.7 and later)</li>
+        <li>The bill counts actual tokens: 1,100 billed, but 1,500 TPM used</li>
+      </ul>
+      <div class="why">
+        <div class="panel-label">Why it matters</div>
+        <p>An oversized <code>max_tokens</code> causes 429s. Set it close to the output you expect.</p>
+      </div>
+    </div>
+    <div class="progress"><span class="done">1</span><span class="done">2</span><span class="done">3</span><span class="done">4</span><span class="done">5</span><span class="now">6</span><span>7</span></div>
+    <div class="slide-no">06 / 07</div>
+  </section>
+
+  <!-- 7. Decode -->
+  <section class="slide" data-label="7 · Decode">
+    <div class="edge-strip"></div>
+    <div class="title-tab"></div>
+    <div class="title-block">
+      <div class="eyebrow">Claude on Amazon Bedrock · 7 of 7</div>
+      <h1 class="h-title">Decode is limited by memory, not compute</h1>
+    </div>
+    <img class="logo-tr" src="assets/aws-logo-gray850.svg" alt="AWS">
+    <div class="diagram"><img src="diagrams/7-decode.excalidraw.svg" alt="Decode is limited by memory, not compute"></div>
+    <div class="panel">
+      <div class="panel-label">What happens</div>
+      <ul>
+        <li>Every token rereads the active weights and the KV cache from HBM</li>
+        <li>The cores spend most of their time waiting on memory</li>
+        <li>Longer context means a bigger KV cache and more bytes per token</li>
+      </ul>
+      <div class="why">
+        <div class="panel-label">Why it matters</div>
+        <p>Batching, prompt caching and shorter context cut both cost and latency.</p>
+      </div>
+    </div>
+    <div class="progress"><span class="done">1</span><span class="done">2</span><span class="done">3</span><span class="done">4</span><span class="done">5</span><span class="done">6</span><span class="now">7</span></div>
+    <div class="slide-no">07 / 07</div>
+  </section>
+
+</deck-stage>
+</body>
+</html>

@@ -32,7 +32,7 @@ D["1-compute-stack"] = () => {
   s.arrow("z3", "b", "z4", "t");
   s.text(636, 3 * (ZH + GAP) - GAP / 2 - 11, "checkpoint ships to serving fleets", { fs: 16, color: C.purple[0] });
   const fy = 4 * (ZH + GAP) - GAP + 30;
-  s.text(0, fy, "Training is paid once per checkpoint, but every model generation pays it again, and RL post-training is a large repeated cost.\nInference is the bill that grows with usage. During decode it is memory-bandwidth bound, not compute bound (see 7).", { fs: 17, color: C.muted });
+  s.note(0, fy, "Training is paid once per checkpoint, but every model generation pays it again, and RL post-training is a large repeated cost.\nInference is the bill that grows with usage. During decode it is memory-bandwidth bound, not compute bound (see 7).", { fs: 17, color: C.muted });
   return s;
 };
 
@@ -50,7 +50,7 @@ D["2-distribution"] = () => {
   [0, 1, 2, 3].forEach((i) => s.arrow("w", "r", `o${i}`, "l", { ta: 0.2 + i * 0.2 }));
   s.card("aws", 1130, 55, "A Bedrock call runs on AWS", "end to end, on Trainium and GPU\nserving fleets. A request never\nhops to another provider.", { w: 330, color: C.orange, tfs: 20, bfs: 16 });
   s.arrow("o1", "r", "aws", "l");
-  s.text(0, 390, "Multi-cloud compute is a supply hedge for Anthropic, not a request path.", { fs: 17, color: C.muted });
+  s.note(0, 390, "Multi-cloud compute is a supply hedge for Anthropic, not a request path.", { fs: 17, color: C.muted });
   return s;
 };
 
@@ -81,7 +81,7 @@ D["3-endpoints"] = () => {
   const y5 = y4 + 140;
   s.card("fleet", 330, y5, "Inference on an AWS serving fleet", "Trainium · GPU · weights and KV cache resident in HBM", { w: 720, color: C.green, tfs: 20 });
   s.arrow("both", "b", "fleet", "t");
-  s.text(0, y5 + 120, "Choose on capability, not cost. Model access is per account: \"is not available for this account\" is a Model access issue, not IAM or code.\nFrom a VPC, use PrivateLink interface endpoints to avoid NAT egress charges.", { fs: 16, color: C.muted });
+  s.note(0, y5 + 120, "Choose on capability, not cost. Model access is per account: \"is not available for this account\" is a Model access issue, not IAM or code.\nFrom a VPC, use PrivateLink interface endpoints to avoid NAT egress charges.", { fs: 16, color: C.muted });
   return s;
 };
 
@@ -108,7 +108,7 @@ D["4-pick-endpoint"] = () => {
   s.card("stay", 1210, oy, "Stay on mantle", "in-region only", { w: 230, color: C.purple, bfs: 15 });
   s.arrow("q2", "b", "split", "t", { label: "yes" });
   s.arrow("q2", "b", "stay", "t", { label: "no" });
-  s.text(-200, oy + 170, "Enforce the profile choice with an IAM condition on bedrock:InferenceProfileArn, and an SCP for the whole organization.\nDon't rely on developers picking the right model ID.", { fs: 17, color: C.muted });
+  s.note(-200, oy + 170, "Enforce the profile choice with an IAM condition on bedrock:InferenceProfileArn, and an SCP for the whole organization.\nDon't rely on developers picking the right model ID.", { fs: 17, color: C.muted });
   return s;
 };
 
@@ -138,7 +138,7 @@ D["5-cris-path"] = () => {
   s.arrow("prof", "b", "glf", "l", { ta: 0.9, via: [[894, 565]], dashed: true });
   s.text(906, 400, "or", { fs: 16 });
   s.arrow("ep", "b", "stay", "t", { dashed: true });
-  s.text(0, 700, "Geo profiles keep processing in the geography. Global can use any commercial region and is the baseline price;\ngeo and in-region cost about 10% more (Sonnet 4.5 and later). Mantle doesn't do CRIS: it serves in-region only.\nAWS doesn't publish how Claude fleets are placed across AZs, so this diagram stops at the region.", { fs: 16, color: C.muted });
+  s.note(0, 700, "Geo profiles keep processing in the geography. Global can use any commercial region and is the baseline price;\ngeo and in-region cost about 10% more (Sonnet 4.5 and later). Mantle doesn't do CRIS: it serves in-region only.\nAWS doesn't publish how Claude fleets are placed across AZs, so this diagram stops at the region.", { fs: 16, color: C.muted });
   return s;
 };
 
@@ -157,7 +157,7 @@ D["6-quota-burndown"] = () => {
   for (let i = 0; i < steps.length - 1; i++) s.arrow(steps[i][0], "r", steps[i + 1][0], "l");
   s.card("tip", 300, 200, "Throttling comes from the reservation, not the bill", "A large max_tokens holds quota you never use, so 429s arrive early.\nSet max_tokens close to the output you expect.", { w: 840, color: C.yellow, bfs: 17 });
   s.arrow("res", "b", "tip", "t", { dashed: true, tb: 0.14 });
-  s.text(0, 380, "Runtime has one TPM quota per model covering input and output; there's no RPM limit. Mantle meters input and output separately.", { fs: 16, color: C.muted });
+  s.note(0, 380, "Runtime has one TPM quota per model covering input and output; there's no RPM limit. Mantle meters input and output separately.", { fs: 16, color: C.muted });
   return s;
 };
 
@@ -177,7 +177,7 @@ D["7-decode"] = () => {
   s.arrow("dec", "b", "why", "t", { dashed: true });
   s.card("lev", 0, 210, "Levers", "Batching: reuse each loaded byte across requests\nPrompt caching: skip prefill for repeated prefixes\nDisaggregated serving: prefill and decode on\n    separate hardware\nShorter context: smaller KV cache per token", { w: 500, color: C.green, align: "left" });
   s.arrow("why", "l", "lev", "r");
-  s.text(0, 440, "Longer context grows the KV cache and the bytes moved per token.\nMoE cuts active parameters per token but not resident memory: every expert stays loaded.", { fs: 17, color: C.muted });
+  s.note(0, 440, "Longer context grows the KV cache and the bytes moved per token.\nMoE cuts active parameters per token but not resident memory: every expert stays loaded.", { fs: 17, color: C.muted });
   return s;
 };
 

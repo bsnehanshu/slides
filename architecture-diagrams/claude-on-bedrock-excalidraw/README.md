@@ -8,6 +8,8 @@ Each diagram in `diagrams/` comes in three files:
 - `*.excalidraw`: the plain Excalidraw scene.
 - `*.png`: a 2× export for slides.
 
+As a slide deck: [`claude-on-bedrock-story`](https://bsnehanshu.github.io/slides/claude-on-bedrock-story/), one slide per diagram with speaker notes.
+
 ---
 
 ## 1. Compute stack: silicon to inference
@@ -141,4 +143,5 @@ The scenes are generated from `tools/diagrams.js`, so edit there rather than han
 cd tools && npm i
 npx esbuild entry.js --bundle --format=iife --outfile=bundle.js --loader:.woff2=file --loader:.css=empty --define:process.env.NODE_ENV='"production"' --minify
 (python3 -m http.server 8765 &) && node export.mjs ../diagrams
+node export.mjs ../../../claude-on-bedrock-story/diagrams --deck   # slide versions: no title or footnotes
 ```
