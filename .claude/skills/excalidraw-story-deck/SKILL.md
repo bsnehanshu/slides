@@ -11,7 +11,8 @@ The output is a deck for reference and explaining, not a pitch. Every slide answ
 
 - Split the topic into 1–3 **stories**. A story is a flow someone can follow ("how a request gets from laptop to model") or a set of related questions ("how Bedrock serves Claude").
 - Give each story 4–8 slides. Open a flow story with one **overview** slide that shows the whole picture, then one slide per numbered step.
-- One idea per diagram, at most ~6 boxes and ~4 short lines per box. If a diagram turns into a feature table (like a full endpoint comparison), draw a short version for the deck and keep the detailed one in the README as the reference. Details such as config keys, edge cases and gotchas go in the bullets, not on the drawing.
+- One idea per diagram. The diagram does the explaining, so it can be rich, but keep it to one picture you can talk through top to bottom.
+- Make it concrete. Use a worked example with real values instead of placeholders: a real Region (`ap-southeast-2`), real hostnames, real model IDs, real API calls, real hardware (AWS Trainium, NVIDIA GPUs), real numbers (1,000 output tokens = 5,000 TPM). Only use values you have checked. Details such as config keys, edge cases and gotchas go in the bullets, not on the drawing.
 - Fact-check claims against current docs before drawing. Put sources in a README next to the diagrams.
 
 ## 2. Draw the diagrams
@@ -59,7 +60,7 @@ python3 .claude/skills/excalidraw-story-deck/scripts/build.py <deck-dir> [<scrat
 
 This writes `<deck-dir>/index.html`, a single file with every diagram inlined. The optional second argument writes the body-only version used for the artifact. Don't hand-edit `index.html`. Change `deck.json` or `assets/template.html` and rebuild.
 
-The template gives you: a left rail listing every slide grouped by story, ←/→, 1–9 and swipe navigation, `#id` deep links, light/dark mode, and a stacked layout on phones.
+The template is diagram-first: the board fills the screen under a thin title bar. The slide list (`S`) and notes (`N`) are drawers, closed by default. `Z` or a click on the diagram switches between fit-to-screen and actual size for dense diagrams. ←/→ and swipe move between slides, and `#id` deep links open one slide.
 
 ## 5. Check and ship
 

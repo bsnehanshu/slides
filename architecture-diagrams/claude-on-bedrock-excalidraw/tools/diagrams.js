@@ -57,21 +57,21 @@ D["2-distribution"] = () => {
 // 3. Endpoints -------------------------------------------------------------
 D["3-endpoints"] = () => {
   const s = new Scene();
-  s.header(0, -170, "3 · Bedrock endpoints for Claude", "Same models, same per-token price. Capabilities belong to the endpoint, not the API.");
+  s.header(0, -170, "3 · Bedrock endpoints for Claude", "Worked example: your app in Sydney calls Claude Sonnet 4.5. Same per-token price on both endpoints; the features differ.");
   const CW = 640, RX = 0, MX = 740;
-  s.box("app", 470, -70, "Your application", { w: 270, h: 60, color: C.gray });
-  s.card("rt", RX, 40, "bedrock-runtime", "bedrock-runtime.{region}.amazonaws.com\nrecommended default for new apps", { w: CW, color: C.blue, tfs: 24 });
-  s.card("mt", MX, 40, "bedrock-mantle", "bedrock-mantle.{region}.api.aws\nin-region only · fewer models and regions", { w: CW, color: C.purple, tfs: 24 });
+  s.box("app", 420, -80, "Your app in Sydney (ap-southeast-2)\nboto3 or the Anthropic SDK", { w: 370, h: 80, color: C.gray });
+  s.card("rt", RX, 40, "bedrock-runtime", "bedrock-runtime.ap-southeast-2.amazonaws.com\nmodelId: global.anthropic.claude-sonnet-4-5-20250929-v1:0\nAWS's recommended default for new apps", { w: CW, color: C.blue, tfs: 24 });
+  s.card("mt", MX, 40, "bedrock-mantle", "bedrock-mantle.{region}.api.aws\nmodel: short ID, no profile prefix (anthropic.claude-…)\nin-region only · fewer models and regions", { w: CW, color: C.purple, tfs: 24 });
   s.arrow("app", "b", "rt", "t", { ta: 0.3 }); s.arrow("app", "b", "mt", "t", { ta: 0.7 });
   const col = (x, id, title, body, color, y, h) => s.card(id, x, y, title, body, { w: CW, h, color, align: "left", tfs: 20, bfs: 16 });
-  const y1 = 190, h1 = 200;
-  col(RX, "rapi", "APIs", "InvokeModel / InvokeModelWithResponseStream\nConverse / ConverseStream\nMessages API (Anthropic-native)\nChat Completions (OpenAI-compatible)\nResponses API: sync only, default project only,\n    no server-side tools, response pinned to its region", ["#1971c2", "#e7f5ff"], y1, h1);
-  col(MX, "mapi", "APIs", "Messages API (Anthropic-native)\n    but output_config.format (structured outputs) → 400\nChat Completions (OpenAI-compatible)\nResponses API: full, incl. background and server tools", ["#6741d9", "#f3f0ff"], y1, h1);
+  const y1 = 235, h1 = 200;
+  col(RX, "rapi", "APIs", "converse(modelId=…, messages=[…])  / ConverseStream\ninvoke_model_with_response_stream(…)  ← Claude Code uses this\nMessages API (Anthropic-native)\nChat Completions (OpenAI-compatible)\nResponses API: sync only, no server-side tools", ["#1971c2", "#e7f5ff"], y1, h1);
+  col(MX, "mapi", "APIs", "Messages API (Anthropic-native)\n    but output_config.format (structured outputs) → HTTP 400\nChat Completions (OpenAI-compatible)\nResponses API: full, incl. background=true and server tools", ["#6741d9", "#f3f0ff"], y1, h1);
   const y2 = y1 + h1 + 30, h2 = 175;
-  col(RX, "ronly", "Only on runtime", "Cross-Region inference: geo and global profiles\nGuardrails\nIntelligent prompt routing\nStructured outputs (use Converse or InvokeModel)\nApplication inference profiles", C.blue, y2, h2);
-  col(MX, "monly", "Only on mantle", "Server-side tool use\nPre-configured tools, incl. web search\nAsynchronous / long-running inference\nProjects and Workspaces", C.purple, y2, h2);
+  col(RX, "ronly", "Only on runtime", "Cross-Region inference: au. · apac. · global. profiles\nGuardrails, e.g. mask PII before it reaches the model\nIntelligent prompt routing\nStructured outputs (use Converse or InvokeModel)\nApplication inference profiles → cost per team", C.blue, y2, h2);
+  col(MX, "monly", "Only on mantle", "Server-side tool use\nPre-configured tools, e.g. web search\nAsync jobs for long-running agent work\nProjects and Workspaces → usage per team", C.purple, y2, h2);
   const y3 = y2 + h2 + 30, h3 = 175;
-  col(RX, "rq", "Quotas and attribution", "One TPM quota per model, input + output combined\nOutput tokens burn 5× (Claude 3.7 and later)\nmax_tokens is reserved when the request starts\nNo RPM limit · attribute by IAM principal, tags,\n    application inference profiles", ["#1971c2", "#e7f5ff"], y3, h3);
+  col(RX, "rq", "Quotas and attribution", "One TPM quota per model, input + output combined\nOutput burns 5×: 1,000 output tokens = 5,000 TPM\nmax_tokens is reserved when the request starts\nNo RPM limit · attribute by IAM principal, tags,\n    application inference profiles", ["#1971c2", "#e7f5ff"], y3, h3);
   col(MX, "mq", "Quotas and attribution", "Separate input TPM and output TPM\nFair-share scheduling: requests may briefly queue\nHigher initial limits · no RPM limit\nAttribute by Projects and Workspaces", ["#6741d9", "#f3f0ff"], y3, h3);
   [["rt", "rapi"], ["rapi", "ronly"], ["ronly", "rq"], ["mt", "mapi"], ["mapi", "monly"], ["monly", "mq"]].forEach(([a, b]) => s.arrow(a, "b", b, "t"));
   const y4 = y3 + h3 + 50;
@@ -79,22 +79,9 @@ D["3-endpoints"] = () => {
   s.arrow("rq", "b", "both", "t", { ta: 0.5, tb: CW / 2 / (MX + CW) });
   s.arrow("mq", "b", "both", "t", { tb: (MX + CW / 2) / (MX + CW) });
   const y5 = y4 + 140;
-  s.card("fleet", 330, y5, "Inference on an AWS serving fleet", "Trainium · GPU · weights and KV cache resident in HBM", { w: 720, color: C.green, tfs: 20 });
+  s.card("fleet", 330, y5, "Inference on an AWS serving fleet", "AWS Trainium chips + NVIDIA GPUs · weights and KV cache held in HBM", { w: 720, color: C.green, tfs: 20 });
   s.arrow("both", "b", "fleet", "t");
   s.text(0, y5 + 120, "Choose on capability, not cost. Model access is per account: \"is not available for this account\" is a Model access issue, not IAM or code.\nFrom a VPC, use PrivateLink interface endpoints to avoid NAT egress charges.", { fs: 16, color: C.muted });
-  return s;
-};
-
-// 3s. Endpoints, simplified for the story deck ------------------------------
-D["3-endpoints-simple"] = () => {
-  const s = new Scene();
-  s.header(0, -150, "3 · Two Bedrock endpoints for Claude", "Same price. Pick by the features you need.");
-  s.box("app", 440, 0, "Your application", { w: 300, h: 64, color: C.gray, fs: 22 });
-  s.card("rt", 0, 170, "bedrock-runtime", "the default\n\n✓ cross-Region inference\n✓ Guardrails\n✓ structured outputs", { w: 500, h: 250, color: C.blue, tfs: 28, bfs: 21 });
-  s.card("mt", 680, 170, "bedrock-mantle", "for agent features\n\n✓ server-side tools, web search\n✓ long-running (async) jobs\n✗ in-region only, fewer models", { w: 500, h: 250, color: C.purple, tfs: 28, bfs: 21 });
-  s.arrow("app", "b", "rt", "t", { ta: 0.3 }); s.arrow("app", "b", "mt", "t", { ta: 0.7 });
-  s.card("both", 0, 500, "Same on both", "Anthropic Messages API · same per-token price · served on AWS", { w: 1180, color: C.green, tfs: 22, bfs: 19 });
-  s.arrow("rt", "b", "both", "t", { tb: 250 / 1180 }); s.arrow("mt", "b", "both", "t", { tb: 930 / 1180 });
   return s;
 };
 

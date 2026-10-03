@@ -115,11 +115,11 @@
    "story": "B",
    "eyebrow": "Story B · 3 of 7",
    "title": "Two Bedrock endpoints for Claude",
-   "img": "../architecture-diagrams/claude-on-bedrock-excalidraw/diagrams/3-endpoints-simple.excalidraw.svg",
+   "img": "../architecture-diagrams/claude-on-bedrock-excalidraw/diagrams/3-endpoints.excalidraw.svg",
    "what": [
-    "Start on <code>bedrock-runtime</code>. It has the AWS extras: cross-Region inference, Guardrails, structured outputs",
-    "Use <code>bedrock-mantle</code> only for agent features: server-side tools, web search, async jobs. It's in-region only",
-    "Both speak the Anthropic Messages API at the same price. Full feature matrix: the detailed diagram in the repo README"
+    "Sydney app on <code>bedrock-runtime.ap-southeast-2.amazonaws.com</code> with <code>global.anthropic.claude-sonnet-4-5-20250929-v1:0</code>. That's the default path",
+    "Runtime has the AWS extras: cross-Region inference, Guardrails, structured outputs, cost per team via app inference profiles",
+    "Mantle is for agent features (server-side tools, web search, async jobs), in-region only. Structured outputs on mantle Messages → HTTP 400"
    ],
    "say": "Pick the endpoint by the features you need. Price doesn't decide it."
   },
