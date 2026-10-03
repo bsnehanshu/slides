@@ -1,0 +1,5 @@
+flowchart LR
+  A["Request<br/>input 1,000<br/>max_tokens 8,000"] --> B["Reserve up front<br/>1,000 + 8,000 = 9,000 TPM"]
+  B --> C["Model emits<br/>100 output tokens"]
+  C --> D["Settle quota<br/>1,000 + 100 × 5 = 1,500 TPM"]
+  D --> E["Bill<br/>1,000 + 100 = 1,100 tokens"]

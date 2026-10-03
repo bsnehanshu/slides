@@ -1,0 +1,14 @@
+sequenceDiagram
+  autonumber
+  participant App as App (ap-southeast-2)
+  participant Src as Source region endpoint
+  participant Prof as Inference profile
+  participant Dst as Destination region fleet
+  App->>Src: InvokeModel / Converse with profile ID
+  Note right of Src: IAM check, incl.<br/>bedrock:InferenceProfileArn
+  Src->>Prof: Resolve in-region / apac. / global.
+  Prof->>Dst: Route to a region with capacity
+  Dst-->>Src: Generated tokens
+  Src-->>App: Response
+  Note over App,Src: CloudWatch, CloudTrail and invocation logs<br/>stay in the source region.<br/>Price is set by the source region.
+  Note over Prof,Dst: Geo stays in the geography.<br/>Global can use any commercial region.

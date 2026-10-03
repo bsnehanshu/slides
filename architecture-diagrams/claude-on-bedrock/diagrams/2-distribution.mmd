@@ -1,0 +1,10 @@
+flowchart LR
+  TRN["AWS Trainium"] --> W
+  TPU["Google TPU"] --> W
+  GPU["Nvidia GPU"] --> W
+  W(["Claude weights"])
+  W --> API["Claude API"]
+  W --> BR["Amazon Bedrock"]
+  W --> VX["Vertex AI"]
+  W --> FD["Microsoft Foundry"]
+  BR --> RQ["A Bedrock call is served<br/>on AWS end to end"]

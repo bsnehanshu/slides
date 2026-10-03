@@ -1,0 +1,24 @@
+flowchart TB
+  subgraph S["Silicon supply"]
+    direction LR
+    FAB["TSMC fab"]
+    HBM["HBM<br/>SK Hynix · Samsung · Micron"]
+    ACC["Accelerators<br/>Nvidia GPU · Google TPU · AWS Trainium"]
+    FAB ~~~ HBM ~~~ ACC
+  end
+  subgraph C["Capacity"]
+    direction LR
+    CL["Cloud fleets<br/>AWS · GCP · Azure"]
+    RA["Mega-clusters<br/>e.g. Project Rainier"]
+    CL ~~~ RA
+  end
+  subgraph T["Training · per model generation"]
+    direction LR
+    PRE["Pretraining"] --> POST["Post-training<br/>RL · distillation"] --> CK["Checkpoint"]
+  end
+  subgraph I["Inference · continuous"]
+    direction LR
+    SV["Serving fleets<br/>Trainium · GPU"] --- KV["KV cache in HBM"]
+    SV --> APP["Customer apps · agents"]
+  end
+  S --> C --> T -->|checkpoint ships| I
