@@ -30,6 +30,7 @@ Story C of the [Bedrock Whiteboard](../../bedrock-whiteboard/) deck. These 19 ha
 - Who processes the data:
   - **Claude in Amazon Bedrock:** AWS operates the stack and is the inference data processor, and Anthropic has zero operator access.
   - **Claude Platform on AWS** (AWS Marketplace, GA May 2026): Anthropic operates it and is the data processor, under Anthropic's data terms. AWS processes only billing (CCUs) and identity metadata. Retention matches the Claude API, with ZDR on request. `inference_geo` is US (1.1×) or Global, and there's no AU option. The workspace Region doesn't pin where inference runs.
+  - **Claude Enterprise via AWS Marketplace:** this is the claude.ai product (Chat, Cowork, Claude Code), managed at claude.ai, with Anthropic as the operator. AWS only handles billing. Retention is set by admins, and ZDR is available by agreement. Data residency options weren't confirmed here, so check them before promising AU.
 - Current models:
   - **Opus 5.5:** released 22 Sep 2026. Bedrock ID `anthropic.claude-opus-5-5`. $4 / $20 per MTok. Cache writes cost $5 (5 min) or $8 (1 h), and cache reads $0.20 (5% of input).
   - **Sonnet 5.5:** released 28 Sep 2026. Bedrock ID `anthropic.claude-sonnet-5-5`. $2 / $10 per MTok.
