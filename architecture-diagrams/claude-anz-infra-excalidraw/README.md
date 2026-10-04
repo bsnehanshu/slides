@@ -1,6 +1,6 @@
 # Claude in ANZ: silicon to invoice (Excalidraw, L300–400)
 
-Story C of the [Bedrock Whiteboard](../../bedrock-whiteboard/) deck. These 14 hand-drawn diagrams follow Claude from the training cluster to a prompt typed in Sydney or Auckland. They cover the chips, accelerator anatomy, chip lineups and market share, what's inside one rack, serving vs training scale, how weights reach a Region, prefill and decode, where prompt caching lives, sizing, the Bedrock APIs, data residency across the AU and NZ border, and what a team's usage costs.
+Story C of the [Bedrock Whiteboard](../../bedrock-whiteboard/) deck. These 17 hand-drawn diagrams follow Claude from the training cluster to a prompt typed in Sydney or Auckland. They cover the chips, accelerator anatomy, chip lineups and market share, what's inside one rack, serving vs training scale, how weights reach a Region, prefill and decode, where prompt caching lives, sizing, the Bedrock APIs, data residency across the AU and NZ border, and what a team's usage costs.
 
 | # | Diagram |
 |---|---|
@@ -13,10 +13,13 @@ Story C of the [Bedrock Whiteboard](../../bedrock-whiteboard/) deck. These 14 ha
 | c1e | ![](diagrams/c1e-serve-vs-train.excalidraw.svg) |
 | c2 | ![](diagrams/c2-weights-to-region.excalidraw.svg) |
 | c3 | ![](diagrams/c3-inside-a-request.excalidraw.svg) |
+| c3a | ![](diagrams/c3a-memory-constrained.excalidraw.svg) |
 | c4 | ![](diagrams/c4-prompt-caching.excalidraw.svg) |
 | c5 | ![](diagrams/c5-sizing.excalidraw.svg) |
 | c6 | ![](diagrams/c6-consume.excalidraw.svg) |
 | c7 | ![](diagrams/c7-residency.excalidraw.svg) |
+| c7a | ![](diagrams/c7a-sovereignty-ladder.excalidraw.svg) |
+| c7b | ![](diagrams/c7b-pool-vs-local.excalidraw.svg) |
 | c8 | ![](diagrams/c8-tokens-to-dollars.excalidraw.svg) |
 
 ## Facts, estimates and unknowns
@@ -24,7 +27,20 @@ Story C of the [Bedrock Whiteboard](../../bedrock-whiteboard/) deck. These 14 ha
 **Published (checked 2026-10-03)**
 - Anthropic trains on three chip platforms: AWS Trainium, Google TPUs and NVIDIA GPUs. Project Rainier (Trainium2, Indiana) trains and serves Claude.
 - Latency-optimized Claude 3.5 Haiku on Bedrock runs on Trainium2.
-- Bedrock runs one model deployment account per model provider in each Region. Bedrock owns those accounts and providers can't access them. Bedrock doesn't store prompts or outputs, or use them to train models.
+- Bedrock runs one model deployment account per model provider in each Region. Bedrock owns those accounts and providers can't access them.
+- For Opus, Sonnet and Haiku, Bedrock doesn't store prompts or outputs, or share them.
+- **Exception: Mythos-class models (Fable 5, Mythos 5).** Since 9 June 2026, Anthropic retains their prompts and outputs for 30 days on every platform. On Bedrock that means opting into `provider_data_share`, which is the only mode allowed for those models.
+- **Reported, not yet a published policy:** per Bloomberg (20 Aug 2026), Anthropic plans to let enterprises keep that 30-day data in their own cloud, by the end of 2026.
+- Competing approach: OpenAI previewed "Private Safety Processing" on 19 Aug 2026. It keeps zero data retention while still watching for misuse.
+- Memory constraint, as stated in public:
+  - Micron says it's "sold out for 2026" on HBM.
+  - Each bit of HBM uses about 3 bits' worth of conventional DRAM capacity.
+  - Demis Hassabis says memory shortages are "constraining a lot of deployment".
+- Sovereign AI programs:
+  - Australia's National AI Plan: data-centre capacity is forecast to grow from 1,350 MW (2024) to 3,100 MW (2030), and legislation is expected in early 2027.
+  - Korea's National AI Computing Center at Haenam: 15,000 chips by 2028.
+  - IndiaAI: about 34,000 GPUs.
+  - New Zealand: Kererū.ai with SCX.ai.
 - `au.` cross-Region inference routes between Sydney and Melbourne. Since Bedrock launched in Auckland (ap-southeast-6, 2026), the AU geography also covers Auckland.
 - Prompt caching on Claude:
   - TTL is 5 minutes, or 1 hour on Sonnet 4.5, Haiku 4.5 and Opus 4.5. Those models need at least 4,096 tokens per checkpoint.
@@ -63,6 +79,11 @@ Story C of the [Bedrock Whiteboard](../../bedrock-whiteboard/) deck. These 14 ha
 - [Bedrock data protection](https://docs.aws.amazon.com/bedrock/latest/userguide/data-protection.html)
 - [Trainium2 architecture (Neuron docs)](https://awsdocs-neuron.readthedocs-hosted.com/en/latest/general/arch/neuron-hardware/trn2-arch.html) · [Trn2 launch](https://aws.amazon.com/blogs/aws/amazon-ec2-trn2-instances-and-trn2-ultraservers-for-aiml-training-and-inference-is-now-available)
 - [Anthropic: Trainium2 and distillation](https://www.anthropic.com/news/trainium2-and-distillation) · [Anthropic and Amazon compute](https://www.anthropic.com/news/anthropic-amazon-compute)
+- [Bloomberg: Anthropic retention change](https://www.bloomberg.com/news/articles/2026-08-20/anthropic-plans-to-change-data-retention-policy-for-advanced-ai) · [Quartz](https://qz.com/anthropic-enterprise-data-storage-policy-cloud-082126) · [PYMNTS](https://www.pymnts.com/news/artificial-intelligence/2026/anthropic-plans-to-tweak-data-retention-rules-after-enterprise-concerns/)
+- [AWS: Claude Fable 5 on AWS](https://aws.amazon.com/blogs/aws/anthropic-claude-fable-5-on-aws-mythos-class-capabilities-with-built-in-safeguards-now-available/) · [Classmethod hands-on](https://dev.classmethod.jp/en/articles/claude-fable-5-bedrock/)
+- [OpenAI: zero data retention for frontier models](https://openai.com/index/our-commitment-to-zero-data-retention)
+- [HBM sold out / memory supercycle](https://introl.com/blog/ai-memory-supercycle-hbm-2026)
+- [Australia AI and data-centre laws (ACS)](https://ia.acs.org.au/article/2026/govt-to-introduce-ai--data-centre-laws-in-policy-pivot.html) · [Sovereign AI tracker](https://presenc.ai/research/sovereign-ai-infrastructure-tracker-2026)
 - [HBM share Q2 2026 (Seoul Economic Daily, citing Counterpoint)](https://en.sedaily.com/finance/2026/09/03/samsung-doubles-hbm-market-share-to-33-percent-narrowing)
 - [Accelerator market share estimates](https://introl.com/blog/ai-accelerators-beyond-gpus-tpu-trainium-gaudi-cerebras)
 - [Google TPU7x (Ironwood)](https://docs.cloud.google.com/tpu/docs/tpu7x) · [AWS Trn3](https://aws.amazon.com/ec2/instance-types/trn3/)
