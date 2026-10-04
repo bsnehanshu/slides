@@ -119,7 +119,7 @@ for (const key of Object.keys(STORIES)) {
     if (s.story !== key) return;
     const li = document.createElement("li"), b = document.createElement("button");
     b.dataset.i = i;
-    b.innerHTML = `<span class="n">${s.id.toUpperCase()}</span><span>${s.title}</span>`;
+    b.innerHTML = `<span class="n">${i + 1}</span><span>${s.title}</span>`;
     b.onclick = () => { go(i); drawer("slides", false); };
     li.appendChild(b); g.querySelector("ol").appendChild(li);
   });
