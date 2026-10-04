@@ -45,6 +45,138 @@ D["c1-silicon"] = () => {
   return s;
 };
 
+// C1a. Accelerator anatomy ----------------------------------------------------
+D["c1a-anatomy"] = () => {
+  const s = new Scene();
+  s.header(0, -150, "Anatomy of one accelerator", "Same layout for NVIDIA GPUs, AWS Trainium and Google TPUs: a compute die ringed by HBM, on one package");
+  s.zone("pkg", 0, 0, 900, 540, "One package (what you'd hold in your hand)", { color: C.green });
+  s.card("die", 300, 110, "Compute die", "tensor cores / NeuronCores / MXUs\nvector + scalar units\non-chip SRAM: tens of MB", { w: 300, h: 230, color: C.green, bfs: 15 });
+  [0, 1, 2].forEach((i) => {
+    s.box(`hl${i}`, 50, 95 + i * 90, "HBM stack", { w: 190, h: 70, color: C.blue, fs: 17 });
+    s.box(`hr${i}`, 660, 95 + i * 90, "HBM stack", { w: 190, h: 70, color: C.blue, fs: 17 });
+    s.arrow(`hl${i}`, "r", "die", "l", { both: true, tb: 0.2 + i * 0.3 });
+    s.arrow(`hr${i}`, "l", "die", "r", { both: true, tb: 0.2 + i * 0.3 });
+  });
+  s.text(245, 62, "TB/s", { fs: 16, color: C.blue[0] });
+  s.box("ip", 40, 400, "silicon interposer (TSMC CoWoS) wires die and HBM together", { w: 820, h: 56, color: C.gray, fs: 17 });
+  s.text(40, 475, "HBM per package: 32–288 GB · 1.6–8 TB/s (see next slide)", { fs: 16, color: C.muted });
+  s.zone("host", 1000, 0, 440, 300, "Host server", { color: C.gray });
+  s.card("cpu", 1030, 60, "CPU + server DRAM", "terabytes, but reached over PCIe", { w: 380, h: 100, color: C.gray, bfs: 15 });
+  s.card("ssd", 1030, 180, "NVMe SSD", "weights load from here at startup", { w: 380, h: 90, color: C.gray, bfs: 15 });
+  s.arrow("die", "t", "cpu", "l", { via: [[450, -30], [960, -30], [960, 110]], label: "PCIe Gen5 x16 ≈ 64 GB/s each way", at: 0.45 });
+  s.card("peers", 1000, 360, "Other accelerators", "NVLink (NVIDIA) · NeuronLink (Trainium)\nICI (Google TPU)\nhow one model spans 8–64+ chips", { w: 440, h: 140, color: C.purple, bfs: 15 });
+  s.arrow("pkg", "r", "peers", "l", { ta: 0.8, both: true });
+  s.card("stack", 0, 600, "Inside one HBM stack", "8–12 DRAM dies stacked on a base die, joined by through-silicon vias.\nMade by SK hynix, Samsung and Micron. It's the most supply-constrained part of the chip.", { w: 1440, color: C.blue, bfs: 16 });
+  s.text(0, 760, "Memory ladder, fastest to slowest: on-die SRAM (MBs) → HBM on the package (GBs at TB/s) → host DRAM over PCIe (TBs, ~50–100× slower to reach) → NVMe.\nWeights and the KV cache sit in HBM because decode re-reads them for every token.", { fs: 17, color: C.muted });
+  return s;
+};
+
+// C1b. Chip lineup -------------------------------------------------------------
+D["c1b-chip-lineup"] = () => {
+  const s = new Scene();
+  s.header(0, -150, "NVIDIA vs Trainium vs Google TPU: memory per chip", "Bar length = HBM capacity per chip. Label = capacity · bandwidth. All three are fabbed by TSMC.");
+  const rows = [
+    ["NVIDIA", C.green, [["H100", 80, "3.35 TB/s"], ["H200", 141, "4.8 TB/s"], ["B200", 192, "8 TB/s"], ["B300", 288, "8 TB/s"]]],
+    ["AWS Trainium", C.orange, [["Trainium2", 96, "2.9 TB/s"], ["Trainium3", 144, "4.9 TB/s"]]],
+    ["Google TPU", C.blue, [["TPU v5p", 95, "2.76 TB/s"], ["TPU v6e Trillium", 32, "1.6 TB/s"], ["TPU7x Ironwood", 192, "7.4 TB/s"]]],
+  ];
+  const X0 = 420, K = 3, RH = 62;
+  let y = 0;
+  rows.forEach(([vendor, col, chips], vi) => {
+    const top = y;
+    chips.forEach(([name, gb, bw], i) => {
+      s.text(X0 - 20, y + 14, name, { fs: 19, align: "right" });
+      s.box(`b${vi}${i}`, X0, y, "", { w: gb * K, h: 46, color: col });
+      s.text(X0 + gb * K + 16, y + 12, `${gb} GB · ${bw}`, { fs: 18 });
+      y += RH;
+    });
+    s.text(0, top + (y - top - RH) / 2 + 12, vendor, { fs: 22, color: col[0] });
+    y += 30;
+  });
+  s.line([[X0, -20], [X0, y - 20]], { stroke: C.muted });
+  [100, 200, 300].forEach((g) => s.text(X0 + g * K, y - 10, `${g} GB`, { fs: 15, color: C.muted, align: "center" }));
+  s.card("how", 0, y + 50, "Who can buy them", "NVIDIA sells to every cloud and on-prem buyer. Trainium only exists inside AWS (EC2, Bedrock).\nTPUs only exist inside Google Cloud. All three run Claude: Trainium2 (Project Rainier), TPUs (up to 1M), NVIDIA GPUs.", { w: 1300, color: C.gray, bfs: 16 });
+  return s;
+};
+
+// C1c. Market share --------------------------------------------------------------
+D["c1c-market-share"] = () => {
+  const s = new Scene();
+  s.header(0, -150, "Who supplies the parts: market share", "HBM is a three-company market. Accelerators are mostly NVIDIA, with custom chips growing.");
+  const K = 12;
+  const bar = (id, y, parts) => {
+    let x = 0;
+    parts.forEach(([name, pct, col, label], i) => {
+      s.box(`${id}${i}`, x, y, label || `${name} ${pct}%`, { w: pct * K, h: 80, color: col, fs: pct * K < 230 ? 16 : 20 });
+      x += pct * K;
+    });
+  };
+  s.text(0, 0, "HBM revenue share · Q2 2026 (Counterpoint Research)", { fs: 22 });
+  bar("hbm", 40, [["SK hynix", 50, C.purple], ["Samsung", 33, C.blue], ["Micron", 17, C.orange, "Micron 18%"]]);
+  s.text(0, 135, "SK hynix had 64% a year earlier. Samsung jumped from 21% in Q1 by shipping HBM4 first. Figures round to 101%.", { fs: 16, color: C.muted });
+  s.text(0, 230, "Data-center AI accelerator revenue share · 2026 analyst estimates (they vary)", { fs: 22 });
+  bar("acc", 270, [["NVIDIA", 78, C.green, "NVIDIA ~75–85%"], ["Custom", 16, C.yellow, "Custom chips\n~15–20%"], ["AMD", 6, C.red, "AMD\n~5–7%"]]);
+  s.text(0, 365, "Custom chips = Google TPU (~6–8%), AWS Trainium (~2–3%), Microsoft Maia, Meta MTIA. NVIDIA was ~92% in 2023.", { fs: 16, color: C.muted });
+  s.card("why", 0, 450, "Why this matters for a Claude roadmap", "Every accelerator needs HBM, so HBM supply caps how fast anyone can add serving capacity.\nAnthropic runs on all three accelerator families, which hedges against any one supplier running short.", { w: 1200, color: C.gray, bfs: 16 });
+  return s;
+};
+
+// C1d. One rack, physically ---------------------------------------------------
+D["c1d-rack"] = () => {
+  const s = new Scene();
+  s.header(0, -150, "One rack, physically", "NVIDIA GB200 NVL72, the best-documented AI rack. AWS doesn't publish its Trainium rack layout.");
+  s.zone("rack", 0, 0, 440, 900, "Front of the rack", { color: C.gray });
+  const units = [
+    ["u0", "2 × top-of-rack mgmt switches", 40, C.gray],
+    ["u1", "power shelves", 70, C.red],
+    ["u2", "10 compute trays", 250, C.green],
+    ["u3", "9 NVLink switch trays", 150, C.purple],
+    ["u4", "8 compute trays", 200, C.green],
+    ["u5", "power shelves", 70, C.red],
+  ];
+  let y = 50;
+  units.forEach(([id, label, h, col]) => { s.box(id, 30, y, label, { w: 380, h, color: col, fs: 18 }); y += h + 12; });
+  s.card("tray", 540, 40, "Inside one compute tray", "2 × Grace CPUs + 4 × Blackwell GPUs\n~186 GB HBM3e on each GPU package\nLPDDR5X memory for the CPUs\nNVMe drives · network cards (NICs)", { w: 520, h: 190, color: C.green, align: "left", bfs: 16 });
+  s.arrow("u2", "r", "tray", "l", { ta: 0.3 });
+  s.card("tot", 540, 280, "Whole rack", "72 GPUs · 36 CPUs\n13.4 TB HBM3e · up to 17 TB CPU memory\nNVLink: 130 TB/s inside the rack (1.8 TB/s per GPU)\n~1.36 tonnes", { w: 520, h: 190, color: C.yellow, align: "left", bfs: 16 });
+  s.arrow("u3", "r", "tot", "l", { ta: 0.2, tb: 0.6, dashed: true });
+  s.card("pw", 1120, 40, "Power", "~120 kW per rack\na typical enterprise rack is 5–15 kW\nbusbar → power shelves → trays", { w: 400, h: 150, color: C.red, align: "left", bfs: 16 });
+  s.card("cool", 1120, 220, "Cooling", "direct liquid cooling: cold plates\non GPUs and CPUs, a coolant\ndistribution unit (CDU) per row", { w: 400, h: 150, color: C.blue, align: "left", bfs: 16 });
+  s.card("net", 1120, 400, "Network out of the rack", "scale-out NICs (InfiniBand, Ethernet,\nor EFA on AWS) to other racks\nand to storage", { w: 400, h: 150, color: C.purple, align: "left", bfs: 16 });
+  s.card("aws", 540, 620, "The AWS equivalents", "Trn2 UltraServer: 64 Trainium2 chips across 4 servers, 6 TiB HBM, NeuronLink\nTrn3 UltraServer: up to 144 Trainium3 chips, 20.7 TB HBM3e, 706 TB/s\nTrn3 racks pack over 2× the chips of Trn2 racks. Power per rack isn't published.", { w: 980, color: C.orange, align: "left", bfs: 16 });
+  return s;
+};
+
+// C1e. Serving a Region vs training -------------------------------------------
+D["c1e-serve-vs-train"] = () => {
+  const s = new Scene();
+  s.header(0, -150, "Serving one Region vs training the model", "Same racks, very different shapes of work");
+  const col = (id, x, title, color, lines, scale) => {
+    s.zone(id, x, 0, 480, 600, title, { color });
+    s.card(`${id}a`, x + 25, 60, lines[0][0], lines[0][1], { w: 430, h: 150, color, bfs: 15 });
+    s.card(`${id}b`, x + 25, 240, lines[1][0], lines[1][1], { w: 430, h: 150, color, bfs: 15 });
+    s.card(`${id}c`, x + 25, 420, lines[2][0], lines[2][1], { w: 430, h: 150, color, bfs: 15 });
+  };
+  col("inf", 0, "Inference · one Region (e.g. Sydney)", C.green, [
+    ["Many independent replicas", "each replica = enough chips to hold\nthe weights + KV cache (a rack or part)\nrequests are spread across them"],
+    ["Close to users, across AZs", "latency matters · sized for peak\ntraffic · always on, 24×7"],
+    ["Scale: not published", "illustrative: 50 replicas × 120 kW\n≈ 6 MW for one Region"],
+  ]);
+  col("pre", 530, "Pretraining", C.purple, [
+    ["One giant synchronous job", "every chip works on the same model\nand syncs gradients every step"],
+    ["One tightly coupled site", "needs the fastest fabric between all chips\nweeks to months · checkpoints to storage"],
+    ["Scale: Project Rainier", "~500K Trainium2 in 7 buildings at launch\n30 buildings · 2.2 GW planned · Indiana"],
+  ]);
+  col("rl", 1060, "RL post-training (RLHF and beyond)", C.orange, [
+    ["Generate, score, update", "rollouts (inference-like) → rewards\n(human or AI feedback, tests) → gradient step"],
+    ["Mixed hardware pattern", "rollout fleets can be looser;\nthe update step needs a training cluster"],
+    ["Scale: large and repeated", "runs again for every model version\nnot published per model"],
+  ]);
+  s.card("bar", 0, 650, "Order of magnitude", "1 rack ≈ 120 kW  →  one Region's inference fleet: megawatts (illustrative)  →  Project Rainier at full build: 2.2 GW ≈ 18,000 racks' worth of power", { w: 1540, color: C.gray, bfs: 17 });
+  s.text(0, 800, "Your ap-southeast-2 traffic only ever touches the left column. Training happens elsewhere and ships a checkpoint (slide C2).", { fs: 17, color: C.muted });
+  return s;
+};
+
 // C2. How weights land in a Region ------------------------------------------
 D["c2-weights-to-region"] = () => {
   const s = new Scene();
