@@ -184,15 +184,15 @@
    "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c0-overview.excalidraw.svg",
    "what": [
     "Trained outside your Region, on Trainium2, Google TPUs and NVIDIA GPUs. Sydney only runs inference",
-    "The checkpoint lands in a Bedrock-owned model deployment account in each Region. Anthropic has no access to it",
+    "The checkpoint lands in a Bedrock-owned model deployment account in each Region. Anthropic can't access it",
     "Your app calls <code>bedrock-runtime.ap-southeast-2</code>. Logs, metrics and the bill stay in your account"
    ],
-   "say": "Anthropic builds the model, AWS runs it in your Region, and your data never goes to Anthropic."
+   "say": "AWS runs the model in your Region. For Opus, Sonnet and Haiku your prompts never go to Anthropic; Mythos-class models are the exception (C7a)."
   },
   {
    "id": "c1",
    "story": "C",
-   "eyebrow": "Story C · 1 of 13",
+   "eyebrow": "Story C · 1 of 16",
    "title": "Where Claude is trained vs where it is served",
    "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c1-silicon.excalidraw.svg",
    "what": [
@@ -205,7 +205,7 @@
   {
    "id": "c1a",
    "story": "C",
-   "eyebrow": "Story C · 2 of 13",
+   "eyebrow": "Story C · 2 of 16",
    "title": "Anatomy of one accelerator",
    "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c1a-anatomy.excalidraw.svg",
    "what": [
@@ -218,7 +218,7 @@
   {
    "id": "c1b",
    "story": "C",
-   "eyebrow": "Story C · 3 of 13",
+   "eyebrow": "Story C · 3 of 16",
    "title": "NVIDIA vs Trainium vs Google TPU: memory per chip",
    "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c1b-chip-lineup.excalidraw.svg",
    "what": [
@@ -231,7 +231,7 @@
   {
    "id": "c1c",
    "story": "C",
-   "eyebrow": "Story C · 4 of 13",
+   "eyebrow": "Story C · 4 of 16",
    "title": "Who supplies the parts: market share",
    "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c1c-market-share.excalidraw.svg",
    "what": [
@@ -244,7 +244,7 @@
   {
    "id": "c1d",
    "story": "C",
-   "eyebrow": "Story C · 5 of 13",
+   "eyebrow": "Story C · 5 of 16",
    "title": "One rack, physically",
    "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c1d-rack.excalidraw.svg",
    "what": [
@@ -257,7 +257,7 @@
   {
    "id": "c1e",
    "story": "C",
-   "eyebrow": "Story C · 6 of 13",
+   "eyebrow": "Story C · 6 of 16",
    "title": "Serving one Region vs training the model",
    "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c1e-serve-vs-train.excalidraw.svg",
    "what": [
@@ -270,20 +270,20 @@
   {
    "id": "c2",
    "story": "C",
-   "eyebrow": "Story C · 7 of 13",
+   "eyebrow": "Story C · 7 of 16",
    "title": "How the model lands in Sydney, Melbourne and Auckland",
    "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c2-weights-to-region.excalidraw.svg",
    "what": [
     "Each Region has one Bedrock-owned model deployment account per model provider",
-    "Anthropic can't reach those accounts, their logs, or your prompts. Bedrock doesn't store prompts or use them for training",
+    "Opus, Sonnet, Haiku: prompts and outputs aren't stored or shared. Fable 5 / Mythos 5 need <code>provider_data_share</code>: 30 days kept by Anthropic",
     "How weights are copied between Regions, replica counts and AZ placement aren't published"
    ],
-   "say": "The weights are a copy AWS operates. The model provider can't see anything you send."
+   "say": "The weights are a copy AWS operates. What you send stays with AWS, except on Mythos-class models."
   },
   {
    "id": "c3",
    "story": "C",
-   "eyebrow": "Story C · 8 of 13",
+   "eyebrow": "Story C · 8 of 16",
    "title": "Inside one request: prefill, then decode",
    "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c3-inside-a-request.excalidraw.svg",
    "what": [
@@ -294,9 +294,22 @@
    "say": "The first token is a compute problem. Every token after that is a memory problem."
   },
   {
+   "id": "c3a",
+   "story": "C",
+   "eyebrow": "Story C · 9 of 16",
+   "title": "\"Memory-constrained\" doesn't mean the context window",
+   "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c3a-memory-constrained.excalidraw.svg",
+   "what": [
+    "It means HBM, in three ways: bandwidth (decode re-reads it every token), capacity (weights + KV cache per chip), and supply (three makers)",
+    "The context window is a consequence of capacity: longer context means fewer users per chip",
+    "Micron says HBM is sold out for 2026. One bit of HBM costs ~3 bits of ordinary DRAM in fab capacity"
+   ],
+   "say": "The chips aren't short of maths. They're short of fast memory, and the world has three suppliers."
+  },
+  {
    "id": "c4",
    "story": "C",
-   "eyebrow": "Story C · 9 of 13",
+   "eyebrow": "Story C · 10 of 16",
    "title": "Prompt caching: where the cache actually lives",
    "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c4-prompt-caching.excalidraw.svg",
    "what": [
@@ -309,7 +322,7 @@
   {
    "id": "c5",
    "story": "C",
-   "eyebrow": "Story C · 10 of 13",
+   "eyebrow": "Story C · 11 of 16",
    "title": "Sizing: chips, memory, power, money",
    "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c5-sizing.excalidraw.svg",
    "what": [
@@ -322,7 +335,7 @@
   {
    "id": "c6",
    "story": "C",
-   "eyebrow": "Story C · 11 of 13",
+   "eyebrow": "Story C · 12 of 16",
    "title": "How customers consume it: APIs and the token meter",
    "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c6-consume.excalidraw.svg",
    "what": [
@@ -335,20 +348,46 @@
   {
    "id": "c7",
    "story": "C",
-   "eyebrow": "Story C · 12 of 13",
+   "eyebrow": "Story C · 13 of 16",
    "title": "Data residency: what crosses the AU and NZ border",
    "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c7-residency.excalidraw.svg",
    "what": [
     "<code>au.</code> routes between Sydney and Melbourne, and since the NZ launch Auckland too. Confirm with <code>aws bedrock get-inference-profile</code>",
-    "Prompt and completion cross the border during processing. Logs, metrics and the bill stay in the source Region",
+    "Prompt and completion cross the border during processing. Logs, metrics and the bill stay in the source Region. On Fable 5 / Mythos 5, Anthropic also keeps them for 30 days",
     "<code>global.</code> can go anywhere. Lock the choice down with an IAM condition on <code>bedrock:InferenceProfileArn</code> plus an SCP"
    ],
    "say": "Pick the profile that matches your border, then make it impossible to pick another."
   },
   {
+   "id": "c7a",
+   "story": "C",
+   "eyebrow": "Story C · 14 of 16",
+   "title": "The sovereignty ladder: which rung does the customer need?",
+   "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c7a-sovereignty-ladder.excalidraw.svg",
+   "what": [
+    "Rungs: data at rest → processing location → safety-retention location → in-country inference mandate → sovereign hosting",
+    "Rung 3 is live: Fable 5 / Mythos 5 on Bedrock require <code>provider_data_share</code> (30 days with Anthropic) since June 2026",
+    "Reported (Bloomberg, Aug 2026): option to keep that 30-day data in your own cloud by end of 2026. Not a published policy yet"
+   ],
+   "say": "Most customers need rung 2, not rung 5. Find their rung before selling them sovereignty."
+  },
+  {
+   "id": "c7b",
+   "story": "C",
+   "eyebrow": "Story C · 15 of 16",
+   "title": "Pool globally, or build in-country?",
+   "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c7b-pool-vs-local.excalidraw.svg",
+   "what": [
+    "Economics favours one global pool: scarce chips go further, so <code>global.</code> is the cheapest profile",
+    "Politics favours local fleets: Australia's National AI Plan (DC capacity 1,350 → 3,100 MW by 2030), Korea's national AI centre, IndiaAI, NZ Kererū.ai",
+    "New capacity lands in three places: hyperscaler Regions, sovereign/neocloud operators, enterprise private AI"
+   ],
+   "say": "Regulated and government workloads go in-country. Everyone else rides the global pool."
+  },
+  {
    "id": "c8",
    "story": "C",
-   "eyebrow": "Story C · 13 of 13",
+   "eyebrow": "Story C · 16 of 16",
    "title": "Tokens to dollars: a Sydney team of 1,000",
    "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c8-tokens-to-dollars.excalidraw.svg",
    "what": [

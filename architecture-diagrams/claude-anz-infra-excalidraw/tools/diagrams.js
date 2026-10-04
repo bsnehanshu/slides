@@ -23,7 +23,7 @@ D["c0-overview"] = () => {
   s.arrow("app", "r", "ep", "l", { ta: 0.5, tb: 0.5, label: "4 · prompt" });
   s.arrow("ep", "t", "fleet", "b", { both: true, label: "5 · tokens" });
   s.arrow("app", "l", "gov", "r", { label: "6" });
-  s.text(-30, 580, "1 train · 2 ship the checkpoint to each Region · 3 load onto the fleet · 4 your app calls Sydney · 5 tokens stream back · 6 logs and billing stay in your account.", { fs: 17, color: C.muted });
+  s.text(-30, 580, "1 train · 2 ship the checkpoint to each Region · 3 load onto the fleet · 4 your app calls Sydney · 5 tokens stream back · 6 logs and billing stay in your account.\nException: Mythos-class models (Fable 5, Mythos 5) share prompts and outputs with Anthropic for 30 days (see C7a).", { fs: 17, color: C.muted });
   return s;
 };
 
@@ -192,7 +192,7 @@ D["c2-weights-to-region"] = () => {
     s.arrow(`${id}d`, "r", `${id}f`, "l");
   });
   s.text(0, 400, "dashed = packaging, encryption and\ntransfer between Regions: not published", { fs: 15, color: C.muted });
-  s.card("doc", 0, 680, "Documented", "Anthropic can't access the deployment accounts,\ntheir logs, or your prompts and completions.\nBedrock doesn't store prompts or outputs,\nor use them to train models.", { w: 620, color: C.blue, align: "left", bfs: 16 });
+  s.card("doc", 0, 680, "Documented", "Anthropic can't access the deployment accounts or their logs.\nOpus, Sonnet, Haiku: prompts and outputs aren't\nstored or shared, and aren't used for training.\nFable 5 / Mythos 5 are the exception (C7a).", { w: 620, color: C.blue, align: "left", bfs: 16 });
   s.card("not", 660, 680, "Not published", "how weights are copied between Regions\nhow many replicas each Region runs\nwhich Availability Zones hold them\nwhich chip type serves which model", { w: 620, color: C.gray, align: "left", bfs: 16, dashed: true });
   return s;
 };
@@ -214,6 +214,21 @@ D["c3-inside-a-request"] = () => {
   s.arrow("wt", "t", "cores", "b", { ta: 0.4, tb: 0.3, label: "3 · read every step", at: 0.65 });
   s.arrow("cores", "r", "out", "l", { ta: 0.5, tb: 0.4, label: "4 · decode" });
   s.text(0, 690, "Prefill processes all 20,000 tokens in parallel: compute bound.\nDecode makes one token per step and re-reads the weights plus the whole KV cache from HBM each time: memory-bandwidth bound.\nThat's why HBM size and bandwidth (H200 4.8 TB/s, Trainium2 ~2.9 TB/s) decide how many users one chip can serve.", { fs: 17, color: C.muted });
+  return s;
+};
+
+// C3a. What "memory-constrained" means ------------------------------------------
+D["c3a-memory-constrained"] = () => {
+  const s = new Scene();
+  s.header(0, -150, "\"We're memory-constrained\" doesn't mean the context window", "When AI leaders say it, they mean HBM, in three different ways");
+  const W = 470, H = 300;
+  s.card("bw", 0, 0, "1 · Bandwidth", "decode re-reads the weights and the\nKV cache from HBM for every token\n\nmore TB/s = more tokens per second\n(H200 4.8 TB/s · Ironwood 7.4 TB/s)\n\nsee C3", { w: W, h: H, color: C.blue, bfs: 16 });
+  s.card("cap", 520, 0, "2 · Capacity", "HBM holds weights + KV cache\nKV cache grows with every token of context\n\nfixed GB per chip, so it's a trade:\nlonger context = fewer users at once\n\nsee C5", { w: W, h: H, color: C.yellow, bfs: 16 });
+  s.card("sup", 1040, 0, "3 · Supply", "only SK hynix, Samsung, Micron make HBM\nMicron: \"sold out for 2026\"\n\n1 bit of HBM costs ~3 bits of\nordinary DRAM in fab capacity\n\nsee C1c", { w: W, h: H, color: C.red, bfs: 16 });
+  s.box("ctx", 520, 400, "the context window", { w: W, h: 80, color: C.gray, fs: 22 });
+  s.arrow("cap", "b", "ctx", "t", { label: "is a consequence of", at: 0.5 });
+  s.card("q", 0, 540, "Said in public", "Demis Hassabis (Google DeepMind): memory shortages are \"constraining a lot of deployment\".\nIntel's Lip-Bu Tan calls HBM the biggest AI bottleneck.", { w: 1510, color: C.gray, bfs: 16 });
+  s.text(0, 690, "One line to remember: the chips aren't short of maths. They're short of fast memory, and the whole world shares three suppliers of it.", { fs: 17, color: C.muted });
   return s;
 };
 
@@ -291,8 +306,48 @@ D["c7-residency"] = () => {
   s.arrow("syd", "r", "anyw", "t", { ta: 0.8, tb: 0.2, via: [[480, 140], [480, 470]], dashed: true, label: "global.", at: 0.45 });
   s.card("x", 1240, 0, "Crosses the border", "prompt and completion,\nencrypted in transit on the\nAWS network, while processed", { w: 340, h: 140, color: C.red, bfs: 15 });
   s.card("stay", 1240, 170, "Stays in the source Region", "CloudTrail · CloudWatch\ninvocation logs · bill", { w: 340, h: 120, color: C.green, bfs: 15 });
-  s.card("none", 1240, 320, "Stored nowhere", "Bedrock doesn't store prompts\nor outputs; Anthropic never\nsees them", { w: 340, h: 140, color: C.gray, bfs: 15 });
+  s.card("none", 1240, 320, "Stored? Depends on the model", "Opus · Sonnet · Haiku: not stored,\nnot shared with Anthropic\nFable 5 / Mythos 5: kept 30 days\nby Anthropic (provider_data_share)", { w: 340, h: 160, color: C.gray, bfs: 15 });
   s.text(0, 660, "Check the real destination list: aws bedrock get-inference-profile --inference-profile-identifier au.anthropic.claude-sonnet-4-5-20250929-v1:0\nNZ data on au. can be processed in Australia. In-region keeps it in one Region, if the model is offered there.\nEnforce with an IAM condition on bedrock:InferenceProfileArn plus an SCP. Residency is about location; sovereignty (whose law applies) is a question for legal.", { fs: 16, color: C.muted });
+  return s;
+};
+
+// C7a. The sovereignty ladder ------------------------------------------------------
+D["c7a-sovereignty-ladder"] = () => {
+  const s = new Scene();
+  s.header(0, -150, "The sovereignty ladder: which rung does the customer need?", "Each rung keeps more of the AI lifecycle in-country. Most customers need rung 2, not rung 5.");
+  const rungs = [
+    ["r1", "1 · Data at rest", "S3, logs, knowledge bases stay in ap-southeast-2", "solved by AWS Regions", C.green],
+    ["r2", "2 · Processing location", "in-region or au. profile, enforced with IAM + SCP", "available now (C7)", C.green],
+    ["r3", "3 · Safety retention location", "Fable 5 / Mythos 5: 30 days kept by Anthropic today\n(Bedrock: provider_data_share, mandatory)", "reported: option to keep it in\nyour own cloud, by end of 2026", C.yellow],
+    ["r4", "4 · In-country inference mandate", "law says the model must run in-country", "AU: AI and data-centre rules,\nbills expected early 2027", C.orange],
+    ["r5", "5 · Sovereign hosting", "government-cleared fleets or national models\n(e.g. NZ Kererū.ai, India IndiaAI)", "niche, expensive, growing", C.red],
+  ];
+  rungs.forEach(([id, t, b, status, col], i) => {
+    const y = (4 - i) * 130;
+    const x = i * 60;
+    s.card(id, x, y, t, b, { w: 760, h: 110, color: col, align: "left", bfs: 15 });
+    s.text(x + 790, y + 30, status, { fs: 16, color: C.muted });
+  });
+  for (let i = 0; i < 4; i++) s.arrow(`r${i + 1}`, "t", `r${i + 2}`, "b", { ta: 0.08, tb: 0.04 });
+  s.text(0, 680, "Rung 3 sources: Anthropic support doc (effective 9 June 2026), AWS Fable 5 launch post, Bloomberg (20 Aug 2026) on the customer-cloud option.\nThe customer-cloud option isn't published as a policy yet. Don't promise dates or details to customers.", { fs: 16, color: C.muted });
+  return s;
+};
+
+// C7b. Pool globally vs build in-country ----------------------------------------------
+D["c7b-pool-vs-local"] = () => {
+  const s = new Scene();
+  s.header(0, -150, "Pool globally, or build in-country?", "Economics pulls toward one global pool. Politics pulls toward local fleets.");
+  s.zone("eco", 0, 0, 660, 380, "Economics → pool globally", { color: C.green });
+  s.card("e1", 30, 60, "Scarce chips go further pooled", "one global fleet absorbs peaks\nfrom every Region at once", { w: 600, h: 120, color: C.green, bfs: 16 });
+  s.card("e2", 30, 220, "So global. is the cheapest profile", "geo and in-region cost ~10% more\n(Sonnet 4.5 and later)", { w: 600, h: 120, color: C.green, bfs: 16 });
+  s.zone("pol", 760, 0, 660, 380, "Politics → build in-country", { color: C.red });
+  s.card("p1", 790, 60, "Australia", "National AI Plan · data-centre capacity\n1,350 MW (2024) → 3,100 MW (2030 forecast)", { w: 600, h: 120, color: C.red, bfs: 16 });
+  s.card("p2", 790, 220, "Rest of APJ", "Korea: national AI centre, 15,000 chips by 2028\nIndia: ~34,000 GPUs via IndiaAI · NZ: Kererū.ai", { w: 600, h: 120, color: C.red, bfs: 16 });
+  s.text(0, 430, "Where new capacity actually gets built", { fs: 22 });
+  s.card("b1", 0, 480, "Hyperscaler Regions", "more AZs and AI capacity\nin existing Regions", { w: 450, h: 120, color: C.orange, bfs: 16 });
+  s.card("b2", 485, 480, "Sovereign / neocloud operators", "in-country GPU clouds for\ngovernment and regulated work", { w: 450, h: 120, color: C.purple, bfs: 16 });
+  s.card("b3", 970, 480, "Enterprise private AI", "banks and telcos running open\nmodels on their own hardware", { w: 450, h: 120, color: C.gray, bfs: 16 });
+  s.text(0, 650, "Our read, not a published forecast: regulated industries and government end up in-country; everyone else rides the global pool.\nHBM scarcity means the biggest Regions get new capacity first, so smaller countries wait longest.", { fs: 17, color: C.muted });
   return s;
 };
 
