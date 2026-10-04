@@ -288,7 +288,7 @@
   {
    "id": "b5",
    "story": "D",
-   "eyebrow": "5 · Where the data goes · 1 of 4",
+   "eyebrow": "5 · Where the data goes · 1 of 5",
    "title": "What moves with cross-Region inference",
    "img": "../architecture-diagrams/claude-on-bedrock-excalidraw/diagrams/5-cris-path.excalidraw.svg",
    "what": [
@@ -301,7 +301,7 @@
   {
    "id": "c7",
    "story": "D",
-   "eyebrow": "5 · Where the data goes · 2 of 4",
+   "eyebrow": "5 · Where the data goes · 2 of 5",
    "title": "Data residency: what crosses the AU and NZ border",
    "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c7-residency.excalidraw.svg",
    "what": [
@@ -312,9 +312,22 @@
    "say": "Pick the profile that matches your border, then make it impossible to pick another."
   },
   {
+   "id": "c7c",
+   "story": "D",
+   "title": "\"Claude on AWS\": two products, one exception",
+   "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c7c-who-processes.excalidraw.svg",
+   "what": [
+    "<b>Bedrock</b>: AWS runs inference and is the data processor. Anthropic has zero operator access, and prompts aren't stored or shared",
+    "<b>Exception</b>: Mythos-class models on Bedrock (e.g. Fable 5) also send Anthropic a copy, kept 30 days (<code>provider_data_share</code>)",
+    "<b>Claude Platform on AWS</b> (Marketplace): Anthropic runs inference and is the data processor. AWS only handles billing and IAM. Inference geo is US or Global, with no AU option"
+   ],
+   "say": "Paying through AWS isn't the same as AWS processing your data. Ask who runs the inference that sees the prompt.",
+   "eyebrow": "5 · Where the data goes · 3 of 5"
+  },
+  {
    "id": "c7a",
    "story": "D",
-   "eyebrow": "5 · Where the data goes · 3 of 4",
+   "eyebrow": "5 · Where the data goes · 4 of 5",
    "title": "The sovereignty ladder: which rung does the customer need?",
    "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c7a-sovereignty-ladder.excalidraw.svg",
    "what": [
@@ -327,7 +340,7 @@
   {
    "id": "c7b",
    "story": "D",
-   "eyebrow": "5 · Where the data goes · 4 of 4",
+   "eyebrow": "5 · Where the data goes · 5 of 5",
    "title": "Pool globally, or build in-country?",
    "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c7b-pool-vs-local.excalidraw.svg",
    "what": [

@@ -1,6 +1,6 @@
 # Claude in ANZ: silicon to invoice (Excalidraw, L300–400)
 
-Story C of the [Bedrock Whiteboard](../../bedrock-whiteboard/) deck. These 18 hand-drawn diagrams follow Claude from the training cluster to a prompt typed in Sydney or Auckland. They cover the chips, accelerator anatomy, chip lineups and market share, what's inside one rack, serving vs training scale, how weights reach a Region, prefill and decode, where prompt caching lives, sizing, the Bedrock APIs, data residency across the AU and NZ border, and what a team's usage costs.
+Story C of the [Bedrock Whiteboard](../../bedrock-whiteboard/) deck. These 19 hand-drawn diagrams follow Claude from the training cluster to a prompt typed in Sydney or Auckland. They cover the chips, accelerator anatomy, chip lineups and market share, what's inside one rack, serving vs training scale, how weights reach a Region, prefill and decode, where prompt caching lives, sizing, the Bedrock APIs, data residency across the AU and NZ border, and what a team's usage costs.
 
 | # | Diagram |
 |---|---|
@@ -19,6 +19,7 @@ Story C of the [Bedrock Whiteboard](../../bedrock-whiteboard/) deck. These 18 ha
 | c6 | ![](diagrams/c6-consume.excalidraw.svg) |
 | c6a | ![](diagrams/c6a-model-lineup.excalidraw.svg) |
 | c7 | ![](diagrams/c7-residency.excalidraw.svg) |
+| c7c | ![](diagrams/c7c-who-processes.excalidraw.svg) |
 | c7a | ![](diagrams/c7a-sovereignty-ladder.excalidraw.svg) |
 | c7b | ![](diagrams/c7b-pool-vs-local.excalidraw.svg) |
 | c8 | ![](diagrams/c8-tokens-to-dollars.excalidraw.svg) |
@@ -26,6 +27,9 @@ Story C of the [Bedrock Whiteboard](../../bedrock-whiteboard/) deck. These 18 ha
 ## Facts, estimates and unknowns
 
 **Published (checked 2026-10-04)**
+- Who processes the data:
+  - **Claude in Amazon Bedrock:** AWS operates the stack and is the inference data processor, and Anthropic has zero operator access.
+  - **Claude Platform on AWS** (AWS Marketplace, GA May 2026): Anthropic operates it and is the data processor, under Anthropic's data terms. AWS processes only billing (CCUs) and identity metadata. Retention matches the Claude API, with ZDR on request. `inference_geo` is US (1.1×) or Global, and there's no AU option. The workspace Region doesn't pin where inference runs.
 - Current models:
   - **Opus 5.5:** released 22 Sep 2026. Bedrock ID `anthropic.claude-opus-5-5`. $4 / $20 per MTok. Cache writes cost $5 (5 min) or $8 (1 h), and cache reads $0.20 (5% of input).
   - **Sonnet 5.5:** released 28 Sep 2026. Bedrock ID `anthropic.claude-sonnet-5-5`. $2 / $10 per MTok.
@@ -97,6 +101,7 @@ Story C of the [Bedrock Whiteboard](../../bedrock-whiteboard/) deck. These 18 ha
 - [HBM sold out / memory supercycle](https://introl.com/blog/ai-memory-supercycle-hbm-2026)
 - [Australia AI and data-centre laws (ACS)](https://ia.acs.org.au/article/2026/govt-to-introduce-ai--data-centre-laws-in-policy-pivot.html) · [Sovereign AI tracker](https://presenc.ai/research/sovereign-ai-infrastructure-tracker-2026)
 - [Claude Opus 5.5 overview](https://platform.claude.com/docs/en/models/opus-5-5/overview) · [Claude Sonnet 5.5 overview](https://platform.claude.com/docs/en/models/sonnet-5-5/overview) · [Claude in Amazon Bedrock](https://platform.claude.com/docs/en/build-with-claude/claude-in-amazon-bedrock) · [AWS: Opus 5.5 model card](https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-opus-5-5.html) · [AWS: Sonnet 5.5 model card](https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-sonnet-5-5.html)
+- [Claude Platform on AWS](https://platform.claude.com/docs/en/build-with-claude/claude-platform-on-aws) · [AWS: Claude Platform on AWS GA](https://aws.amazon.com/about-aws/whats-new/2026/05/claude-platform-aws/)
 - [HBM share Q2 2026 (Seoul Economic Daily, citing Counterpoint)](https://en.sedaily.com/finance/2026/09/03/samsung-doubles-hbm-market-share-to-33-percent-narrowing)
 - [Accelerator market share estimates](https://introl.com/blog/ai-accelerators-beyond-gpus-tpu-trainium-gaudi-cerebras)
 - [Google TPU7x (Ironwood)](https://docs.cloud.google.com/tpu/docs/tpu7x) · [AWS Trn3](https://aws.amazon.com/ec2/instance-types/trn3/)
