@@ -314,30 +314,37 @@ D["c7-residency"] = () => {
 // C7c. Who processes your data ----------------------------------------------------
 D["c7c-who-processes"] = () => {
   const s = new Scene();
-  s.header(0, -170, "\"Claude on AWS\": two products, one exception", "Billing through AWS doesn't mean AWS processes your data. Ask one question: who runs the inference that sees the prompt?");
-  s.box("app", 520, -60, "Your app, in your AWS account (IAM, SigV4, CloudTrail)", { w: 520, h: 64, color: C.gray, fs: 18 });
-  const col = (id, x, title, sub, color, rows) => {
-    s.zone(id, x, 60, 500, 620, "", { color });
-    s.card(`${id}h`, x + 20, 80, title, sub, { w: 460, h: 110, color, tfs: 22, bfs: 15 });
-    rows.forEach(([t, b], i) => s.card(`${id}${i}`, x + 20, 215 + i * 150, t, b, { w: 460, h: 130, color: [color[0], "#ffffff"], align: "left", bfs: 15 }));
+  s.header(0, -170, "\"Claude on AWS\": four ways, two data processors", "Billing through AWS doesn't mean AWS processes your data. Ask one question: who runs the inference that sees the prompt?");
+  s.box("app", 520, -60, "Your company, with an AWS account and AWS bill", { w: 680, h: 64, color: C.gray, fs: 18 });
+  const W = 420, G = 20, CW = 380;
+  const col = (id, i, title, sub, color, rows) => {
+    const x = i * (W + G);
+    s.zone(id, x, 60, W, 640, "", { color });
+    s.card(`${id}h`, x + 20, 80, title, sub, { w: CW, h: 120, color, tfs: 21, bfs: 14 });
+    rows.forEach(([t, b], j) => s.card(`${id}${j}`, x + 20, 225 + j * 155, t, b, { w: CW, h: 135, color: [color[0], "#ffffff"], align: "left", tfs: 18, bfs: 14 }));
   };
-  col("bed", 0, "Claude in Amazon Bedrock", "bedrock-runtime / bedrock-mantle · Opus, Sonnet, Haiku", C.orange, [
-    ["Runs inference · data processor", "AWS, in AWS-operated accounts\nAnthropic has zero operator access"],
-    ["Who sees prompts and outputs", "only AWS systems, not stored,\nnot shared with Anthropic"],
+  col("bed", 0, "Claude in Amazon Bedrock", "API · bedrock-runtime / mantle\nOpus, Sonnet, Haiku", C.orange, [
+    ["Data processor", "AWS, in AWS-operated accounts\nAnthropic: zero operator access"],
+    ["Who sees prompts", "only AWS systems\nnot stored, not shared with Anthropic"],
     ["Where it can run", "one Region, au., or global.\nAWS compliance programs apply"],
   ]);
-  col("myt", 520, "Bedrock + Mythos-class", "e.g. Claude Fable 5 · provider_data_share", C.yellow, [
-    ["Runs inference · data processor", "AWS"],
-    ["Who sees prompts and outputs", "AWS, plus a copy to Anthropic\nkept 30 days for safety review"],
-    ["Where it can run", "per model card\n(Fable 5.1 regional only in us-east-1)"],
+  col("myt", 1, "Bedrock + Mythos-class", "API · e.g. Claude Fable 5\nprovider_data_share", C.yellow, [
+    ["Data processor", "AWS"],
+    ["Who sees prompts", "AWS, plus a copy to Anthropic\nkept 30 days for safety review"],
+    ["Where it can run", "per model card\n(Fable 5.1 regional: us-east-1 only)"],
   ]);
-  col("cpa", 1040, "Claude Platform on AWS", "AWS Marketplace · aws-external-anthropic.{region}.api.aws", C.purple, [
-    ["Runs inference · data processor", "Anthropic, under Anthropic's data terms\nAWS processes billing (CCUs) and identity only"],
-    ["Who sees prompts and outputs", "Anthropic: prompts, outputs, files,\nSkills, batches · Claude API retention,\nZero Data Retention on request"],
-    ["Where it can run", "inference_geo: US (1.1×) or Global\nno AU option · workspace Region ≠\nwhere inference runs"],
+  col("cpa", 2, "Claude Platform on AWS", "API · AWS Marketplace\naws-external-anthropic endpoint", C.purple, [
+    ["Data processor", "Anthropic, on Anthropic's terms\nAWS: billing (CCUs) + identity only"],
+    ["Who sees prompts", "Anthropic: prompts, outputs, files,\nSkills, batches · Claude API\nretention, ZDR on request"],
+    ["Where it can run", "inference_geo: US (1.1×) or Global\nno AU option · workspace Region\nisn't where inference runs"],
   ]);
-  s.arrow("app", "b", "bedh", "t", { ta: 0.15 }); s.arrow("app", "b", "myth", "t"); s.arrow("app", "b", "cpah", "t", { ta: 0.85 });
-  s.text(0, 720, "Why pick Claude Platform on AWS anyway: the full Claude API on day one (Skills, code execution, web search, batches, Managed Agents), billed on the AWS invoice.\nWhy pick Bedrock: AWS as the only data processor, AU residency, and AWS compliance programs. Our read: ANZ regulated customers usually land here.", { fs: 17, color: C.muted });
+  col("ent", 3, "Claude Enterprise", "apps for employees · AWS Marketplace\nChat, Cowork, Claude Code", C.blue, [
+    ["Data processor", "Anthropic: it's the claude.ai\nproduct, managed at claude.ai\nAWS: billing only"],
+    ["Who sees prompts", "Anthropic: chats, files, projects\nretention set by your admins\nZDR by agreement"],
+    ["Where it can run", "Anthropic-hosted\ncheck current data residency\noptions before promising AU"],
+  ]);
+  ["bedh", "myth", "cpah", "enth"].forEach((t, i) => s.arrow("app", "b", t, "t", { ta: 0.1 + i * 0.27 }));
+  s.text(0, 740, "AWS processes your data in columns 1–2. Anthropic processes it in columns 3–4, even though all four can show up on the AWS bill.\nWant employees in the Claude apps but data on Bedrock? That's the Claude Desktop on Bedrock pattern in chapter 6.", { fs: 17, color: C.muted });
   return s;
 };
 
