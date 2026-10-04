@@ -368,7 +368,7 @@
    "story": "E",
    "eyebrow": "6 · Example: Claude Desktop on Bedrock · 2 of 6",
    "title": "IT pushes the config",
-   "img": "../claude-desktop-bedrock-story/diagrams/step1.svg",
+   "img": "../architecture-diagrams/claude-desktop-bedrock/steps/step1.svg",
    "what": [
     "Jamf or Intune pushes managed settings: plist domain <code>com.anthropic.claudefordesktop</code> on Mac, <code>HKLM\\SOFTWARE\\Policies\\Claude</code> on Windows",
     "Sets provider = Bedrock, Region, models, allowed folders and the SSO start URL",
@@ -381,7 +381,7 @@
    "story": "E",
    "eyebrow": "6 · Example: Claude Desktop on Bedrock · 3 of 6",
    "title": "User signs in with their work identity",
-   "img": "../claude-desktop-bedrock-story/diagrams/step2.svg",
+   "img": "../architecture-diagrams/claude-desktop-bedrock/steps/step2.svg",
    "what": [
     "The app opens the system browser for IAM Identity Center device sign-in",
     "Identity Center is federated to Okta or Entra, so it's the corporate login and MFA",
@@ -394,7 +394,7 @@
    "story": "E",
    "eyebrow": "6 · Example: Claude Desktop on Bedrock · 4 of 6",
    "title": "The app gets short-lived AWS credentials",
-   "img": "../claude-desktop-bedrock-story/diagrams/step3.svg",
+   "img": "../architecture-diagrams/claude-desktop-bedrock/steps/step3.svg",
    "what": [
     "Identity Center tokens sit in Keychain (Mac) or DPAPI (Windows)",
     "Each session swaps them for permission-set role creds via <code>portal.sso</code>",
@@ -407,7 +407,7 @@
    "story": "E",
    "eyebrow": "6 · Example: Claude Desktop on Bedrock · 5 of 6",
    "title": "Prompts go straight to Bedrock",
-   "img": "../claude-desktop-bedrock-story/diagrams/step4.svg",
+   "img": "../architecture-diagrams/claude-desktop-bedrock/steps/step4.svg",
    "what": [
     "The laptop calls Bedrock in the customer's account, SigV4-signed. Claude Code uses <code>InvokeModelWithResponseStream</code>",
     "Models are inference profiles: <code>global.</code>, <code>us.</code>, <code>eu.</code>, <code>apac.</code>, <code>jp.</code>, <code>au.</code>",
@@ -420,7 +420,7 @@
    "story": "E",
    "eyebrow": "6 · Example: Claude Desktop on Bedrock · 6 of 6",
    "title": "Every call is tied to a real user",
-   "img": "../claude-desktop-bedrock-story/diagrams/step5.svg",
+   "img": "../architecture-diagrams/claude-desktop-bedrock/steps/step5.svg",
    "what": [
     "CloudTrail <code>userIdentity</code> = <code>AWSReservedSSO_&lt;PermSet&gt;/&lt;user&gt;</code>",
     "CUR 2.0 IAM principal cost allocation adds <code>line_item_iam_principal</code>, so cost per user",
