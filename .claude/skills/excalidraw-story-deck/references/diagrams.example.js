@@ -57,11 +57,11 @@ D["2-distribution"] = () => {
 // 3. Endpoints -------------------------------------------------------------
 D["3-endpoints"] = () => {
   const s = new Scene();
-  s.header(0, -170, "3 · Bedrock endpoints for Claude", "Worked example: your app in Sydney calls Claude Sonnet 4.5. Same per-token price on both endpoints; the features differ.");
+  s.header(0, -170, "3 · Bedrock endpoints for Claude", "Worked example: your app in Sydney calls Claude Opus 5.5. Same per-token price on both endpoints; the features differ.");
   const CW = 640, RX = 0, MX = 740;
   s.box("app", 420, -80, "Your app in Sydney (ap-southeast-2)\nboto3 or the Anthropic SDK", { w: 370, h: 80, color: C.gray });
-  s.card("rt", RX, 40, "bedrock-runtime", "bedrock-runtime.ap-southeast-2.amazonaws.com\nmodelId: global.anthropic.claude-sonnet-4-5-20250929-v1:0\nAWS's recommended default for new apps", { w: CW, color: C.blue, tfs: 24 });
-  s.card("mt", MX, 40, "bedrock-mantle", "bedrock-mantle.{region}.api.aws\nmodel: short ID, no profile prefix (anthropic.claude-…)\nin-region only · fewer models and regions", { w: CW, color: C.purple, tfs: 24 });
+  s.card("rt", RX, 40, "bedrock-runtime", "bedrock-runtime.ap-southeast-2.amazonaws.com\nmodelId: au.anthropic.claude-opus-5-5 (stays in Australia)\nAWS's recommended default for new apps", { w: CW, color: C.blue, tfs: 24 });
+  s.card("mt", MX, 40, "bedrock-mantle", "bedrock-mantle.{region}.api.aws\nmodel: anthropic.claude-opus-5-5 (no profile prefix)\nin-region only · fewer models and regions", { w: CW, color: C.purple, tfs: 24 });
   s.arrow("app", "b", "rt", "t", { ta: 0.3 }); s.arrow("app", "b", "mt", "t", { ta: 0.7 });
   const col = (x, id, title, body, color, y, h) => s.card(id, x, y, title, body, { w: CW, h, color, align: "left", tfs: 20, bfs: 16 });
   const y1 = 235, h1 = 200;
@@ -138,7 +138,7 @@ D["5-cris-path"] = () => {
   s.arrow("prof", "b", "glf", "l", { ta: 0.9, via: [[894, 565]], dashed: true });
   s.text(906, 400, "or", { fs: 16 });
   s.arrow("ep", "b", "stay", "t", { dashed: true });
-  s.text(0, 700, "Geo profiles keep processing in the geography. Global can use any commercial region and is the baseline price;\ngeo and in-region cost about 10% more (Sonnet 4.5 and later). Mantle doesn't do CRIS: it serves in-region only.\nAWS doesn't publish how Claude fleets are placed across AZs, so this diagram stops at the region.", { fs: 16, color: C.muted });
+  s.text(0, 700, "Geo profiles keep processing in the geography. Global can use any commercial region and is the baseline price;\ngeo and in-region cost about 10% more (every model since Sonnet 4.5). Mantle doesn't do CRIS: it serves in-region only.\nAWS doesn't publish how Claude fleets are placed across AZs, so this diagram stops at the region.", { fs: 16, color: C.muted });
   return s;
 };
 

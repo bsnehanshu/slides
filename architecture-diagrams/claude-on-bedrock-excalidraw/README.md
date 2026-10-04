@@ -85,7 +85,7 @@ Pricing is the same on both endpoints, so choose based on capability, not cost. 
 | Geo (`apac.` `au.` `jp.` `us.` `eu.`) | A Region within the geography | More throughput, and processing stays in the geography |
 | Global (`global.`) | Any supported commercial Region | Most throughput and the baseline price. Geo and in-region cost about 10% more (Sonnet 4.5 and later). Processing can leave your geography. |
 
-Enforce the choice with an IAM condition on `bedrock:InferenceProfileArn`, plus an SCP across the organization. Mantle uses short model IDs with no profile prefix, e.g. `anthropic.claude-opus-4-8`.
+Enforce the choice with an IAM condition on `bedrock:InferenceProfileArn`, plus an SCP across the organization. Mantle uses short model IDs with no profile prefix, e.g. `anthropic.claude-opus-5-5`.
 
 ## 5. What moves with cross-Region inference
 

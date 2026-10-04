@@ -19,7 +19,8 @@ Paths below are relative to this skill's folder (the folder holding this file).
 
 ## 1. Shape the story
 
-- Split the topic into 1–3 **stories**. A story is either a flow someone can follow ("how a request gets from laptop to model") or a set of related questions ("how Bedrock serves Claude").
+- Structure it as one story: open with a single **"whole story in one picture"** slide, then chapters in the order a listener needs them, then a **recap** slide that reuses the opening picture. Each chapter is a `stories` entry in `deck.json`.
+- Split the topic into chapters (or 1–3 separate stories for unrelated topics). A story is either a flow someone can follow ("how a request gets from laptop to model") or a set of related questions ("how Bedrock serves Claude").
 - Give each story 4–8 slides. Open a flow story with one **overview** slide, then one slide per numbered step.
 - One idea per diagram. The diagram can be rich, but it should read top to bottom as one picture you can talk through.
 - **Make it concrete.** Use one worked example with real values instead of placeholders: a real Region (`ap-southeast-2`), real hostnames, model IDs and API calls, real hardware (AWS Trainium, NVIDIA GPUs), real numbers ("1,000 output tokens = 5,000 TPM"). Fact-check every value against current docs. Keep a placeholder like `{region}` only where you can't confirm the real value, and tell the user which ones are left.

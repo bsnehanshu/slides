@@ -1,186 +1,22 @@
 {
  "title": "Bedrock Whiteboard",
- "subtitle": "Three stories, drawn in Excalidraw. Come back here when you need the context.",
+ "subtitle": "Claude on Bedrock, from silicon to a prompt in Sydney: the whole story first, then six chapters.",
  "stories": {
-  "A": "Story A · Claude Desktop on Bedrock",
-  "B": "Story B · Claude on Bedrock, under the hood",
-  "C": "Story C · Claude in ANZ, silicon to invoice (L300–400)"
+  "S": "Start · The whole story",
+  "H": "1 · The hardware",
+  "M": "2 · Building the model",
+  "R": "3 · Serving a request",
+  "B": "4 · Calling Claude on Bedrock",
+  "D": "5 · Where the data goes",
+  "E": "6 · Example: Claude Desktop on Bedrock",
+  "Z": "Recap"
  },
  "slides": [
   {
-   "id": "a0",
-   "story": "A",
-   "eyebrow": "Story A · Claude Desktop on Bedrock · Overview",
-   "title": "The whole flow on one whiteboard",
-   "img": "../architecture-diagrams/claude-desktop-bedrock/story-view.excalidraw.svg",
-   "what": [
-    "IT configures the app, the user signs in with work SSO, the laptop talks straight to Bedrock in the customer's account",
-    "Five boxes and five numbered arrows. The next five slides walk them one at a time",
-    "No Anthropic login, no API keys, no Anthropic service in the request path"
-   ],
-   "say": "Claude Desktop is just another AWS client. It signs in like any AWS app and calls Bedrock in your own account."
-  },
-  {
-   "id": "a1",
-   "story": "A",
-   "eyebrow": "Story A · Step 1 of 5",
-   "title": "IT pushes the config",
-   "img": "../claude-desktop-bedrock-story/diagrams/step1.svg",
-   "what": [
-    "Jamf or Intune pushes managed settings: plist domain <code>com.anthropic.claudefordesktop</code> on Mac, <code>HKLM\\SOFTWARE\\Policies\\Claude</code> on Windows",
-    "Sets provider = Bedrock, Region, models, allowed folders and the SSO start URL",
-    "Policy is spread over several keys (<code>allowedWorkspaceFolders</code>, <code>coworkEgressAllowedHosts</code>, …). There's no single sandbox switch"
-   ],
-   "say": "IT owns the setup. The user installs nothing extra and can't point the app at another provider."
-  },
-  {
-   "id": "a2",
-   "story": "A",
-   "eyebrow": "Story A · Step 2 of 5",
-   "title": "User signs in with their work identity",
-   "img": "../claude-desktop-bedrock-story/diagrams/step2.svg",
-   "what": [
-    "The app opens the system browser for IAM Identity Center device sign-in",
-    "Identity Center is federated to Okta or Entra, so it's the corporate login and MFA",
-    "Signing in straight to the IdP only works behind your own auth proxy. Bedrock doesn't accept IdP tokens"
-   ],
-   "say": "Same SSO, MFA and offboarding as every other AWS app they already use."
-  },
-  {
-   "id": "a3",
-   "story": "A",
-   "eyebrow": "Story A · Step 3 of 5",
-   "title": "The app gets short-lived AWS credentials",
-   "img": "../claude-desktop-bedrock-story/diagrams/step3.svg",
-   "what": [
-    "Identity Center tokens sit in Keychain (Mac) or DPAPI (Windows)",
-    "Each session swaps them for permission-set role creds via <code>portal.sso</code>",
-    "Keys: <code>inferenceBedrockSso{StartUrl,Region,AccountId,RoleName}</code>. Set the permission-set session to 8–12 h"
-   ],
-   "say": "No long-lived keys on the laptop. Disable the user in the IdP and access ends with the session."
-  },
-  {
-   "id": "a4",
-   "story": "A",
-   "eyebrow": "Story A · Step 4 of 5",
-   "title": "Prompts go straight to Bedrock",
-   "img": "../claude-desktop-bedrock-story/diagrams/step4.svg",
-   "what": [
-    "The laptop calls Bedrock in the customer's account, SigV4-signed. Claude Code uses <code>InvokeModelWithResponseStream</code>",
-    "Models are inference profiles: <code>global.</code>, <code>us.</code>, <code>eu.</code>, <code>apac.</code>, <code>jp.</code>, <code>au.</code>",
-    "Optional VPC endpoint or LLM gateway in front. Gotcha: no shell sandbox on Windows"
-   ],
-   "say": "Your account, your Region, your network controls. Anthropic never sees the traffic."
-  },
-  {
-   "id": "a5",
-   "story": "A",
-   "eyebrow": "Story A · Step 5 of 5",
-   "title": "Every call is tied to a real user",
-   "img": "../claude-desktop-bedrock-story/diagrams/step5.svg",
-   "what": [
-    "CloudTrail <code>userIdentity</code> = <code>AWSReservedSSO_&lt;PermSet&gt;/&lt;user&gt;</code>",
-    "CUR 2.0 IAM principal cost allocation adds <code>line_item_iam_principal</code>, so cost per user",
-    "A Bedrock API key is shared and breaks per-user attribution, so avoid it. OTel export also carries <code>enduser.id</code>"
-   ],
-   "say": "Audit and chargeback come built in. Who called which model, and what it cost."
-  },
-  {
-   "id": "b1",
-   "story": "B",
-   "eyebrow": "Story B · Claude on Bedrock · 1 of 7",
-   "title": "Compute stack: silicon to inference",
-   "img": "../architecture-diagrams/claude-on-bedrock-excalidraw/diagrams/1-compute-stack.excalidraw.svg",
-   "what": [
-    "Training is paid once per checkpoint, and again every model generation. RL post-training is a big repeated cost",
-    "Inference is the cost that grows with usage",
-    "Decode is limited by memory bandwidth, not compute (slide 7)"
-   ],
-   "say": "Training is the entry ticket. Inference is the running bill, and it scales with your users."
-  },
-  {
-   "id": "b2",
-   "story": "B",
-   "eyebrow": "Story B · 2 of 7",
-   "title": "Trained on many clouds, served per platform",
-   "img": "../architecture-diagrams/claude-on-bedrock-excalidraw/diagrams/2-distribution.excalidraw.svg",
-   "what": [
-    "Fan-in (training) and fan-out (serving) are independent",
-    "Multi-cloud compute is a supply hedge, not a request path",
-    "A Bedrock call is served on AWS end to end, on Trainium and GPU"
-   ],
-   "say": "Your request never hops to another cloud. Bedrock traffic stays on AWS."
-  },
-  {
-   "id": "b3",
-   "story": "B",
-   "eyebrow": "Story B · 3 of 7",
-   "title": "Two Bedrock endpoints for Claude",
-   "img": "../architecture-diagrams/claude-on-bedrock-excalidraw/diagrams/3-endpoints.excalidraw.svg",
-   "what": [
-    "Sydney app on <code>bedrock-runtime.ap-southeast-2.amazonaws.com</code> with <code>global.anthropic.claude-sonnet-4-5-20250929-v1:0</code>. That's the default path",
-    "Runtime has the AWS extras: cross-Region inference, Guardrails, structured outputs, cost per team via app inference profiles",
-    "Mantle is for agent features (server-side tools, web search, async jobs), in-region only. Structured outputs on mantle Messages → HTTP 400"
-   ],
-   "say": "Pick the endpoint by the features you need. Price doesn't decide it."
-  },
-  {
-   "id": "b4",
-   "story": "B",
-   "eyebrow": "Story B · 4 of 7",
-   "title": "Which endpoint, which inference profile",
-   "img": "../architecture-diagrams/claude-on-bedrock-excalidraw/diagrams/4-pick-endpoint.excalidraw.svg",
-   "what": [
-    "In-region: strictest residency, lowest throughput",
-    "Geo (<code>apac.</code> <code>au.</code> <code>jp.</code> <code>us.</code> <code>eu.</code>): more throughput, processing stays in the geography",
-    "Global: most throughput at baseline price. Geo and in-region cost ~10% more (Sonnet 4.5+). Enforce with IAM on <code>bedrock:InferenceProfileArn</code> + SCP"
-   ],
-   "say": "Residency vs. throughput is the dial. Global is cheapest and biggest. Geo keeps processing inside the geography."
-  },
-  {
-   "id": "b5",
-   "story": "B",
-   "eyebrow": "Story B · 5 of 7",
-   "title": "What moves with cross-Region inference",
-   "img": "../architecture-diagrams/claude-on-bedrock-excalidraw/diagrams/5-cris-path.excalidraw.svg",
-   "what": [
-    "The model runs in a destination Region",
-    "Request and response still enter and leave through the source Region",
-    "CloudWatch, CloudTrail, invocation logs and price stay with the source Region"
-   ],
-   "say": "Only the compute moves. Your logs, bill and entry point stay home."
-  },
-  {
-   "id": "b6",
-   "story": "B",
-   "eyebrow": "Story B · 6 of 7",
-   "title": "How a runtime request burns TPM quota",
-   "img": "../architecture-diagrams/claude-on-bedrock-excalidraw/diagrams/6-quota-burndown.excalidraw.svg",
-   "what": [
-    "<code>max_tokens</code> is reserved against quota when the request starts",
-    "Output tokens count 5× for Claude 3.7 and later",
-    "No RPM limit since May 2026. Runtime has one TPM per model; mantle splits input and output"
-   ],
-   "say": "Throttling comes from the reservation, not the bill. Set max_tokens near what you actually expect."
-  },
-  {
-   "id": "b7",
-   "story": "B",
-   "eyebrow": "Story B · 7 of 7",
-   "title": "Why memory, not compute, is the bottleneck",
-   "img": "../architecture-diagrams/claude-on-bedrock-excalidraw/diagrams/7-decode.excalidraw.svg",
-   "what": [
-    "Each decoded token reads all active weights plus the KV cache from HBM, then does little math",
-    "Batching reuses each loaded byte across requests. Prefill is compute bound, decode memory bound",
-    "Longer context grows the KV cache. MoE cuts active params, not resident memory"
-   ],
-   "say": "Generating text is a memory-bandwidth problem. That's why batching and long context drive cost."
-  },
-  {
    "id": "c0",
-   "story": "C",
-   "eyebrow": "Story C · Overview",
-   "title": "Claude in ANZ, end to end",
+   "story": "S",
+   "eyebrow": "Start · The whole story",
+   "title": "The whole story in one picture",
    "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c0-overview.excalidraw.svg",
    "what": [
     "Trained outside your Region, on Trainium2, Google TPUs and NVIDIA GPUs. Sydney only runs inference",
@@ -190,22 +26,9 @@
    "say": "AWS runs the model in your Region. For Opus, Sonnet and Haiku your prompts never go to Anthropic; Mythos-class models are the exception (C7a)."
   },
   {
-   "id": "c1",
-   "story": "C",
-   "eyebrow": "Story C · 1 of 16",
-   "title": "Where Claude is trained vs where it is served",
-   "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c1-silicon.excalidraw.svg",
-   "what": [
-    "Training: Project Rainier (over 1M Trainium2 chips, Indiana), up to 1M Google TPUs, and NVIDIA GPUs",
-    "Serving on Bedrock: Trainium2 and NVIDIA GPU instances. AWS doesn't publish which chip serves which model. Inferentia has no public link to Claude",
-    "HBM per chip: Trainium2 96 GB, H100 80 GB, H200 141 GB, B200 192 GB"
-   ],
-   "say": "Training happens once, somewhere big. Your Region only runs inference."
-  },
-  {
    "id": "c1a",
-   "story": "C",
-   "eyebrow": "Story C · 2 of 16",
+   "story": "H",
+   "eyebrow": "1 · The hardware · 1 of 5",
    "title": "Anatomy of one accelerator",
    "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c1a-anatomy.excalidraw.svg",
    "what": [
@@ -217,8 +40,8 @@
   },
   {
    "id": "c1b",
-   "story": "C",
-   "eyebrow": "Story C · 3 of 16",
+   "story": "H",
+   "eyebrow": "1 · The hardware · 2 of 5",
    "title": "NVIDIA vs Trainium vs Google TPU: memory per chip",
    "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c1b-chip-lineup.excalidraw.svg",
    "what": [
@@ -230,8 +53,8 @@
   },
   {
    "id": "c1c",
-   "story": "C",
-   "eyebrow": "Story C · 4 of 16",
+   "story": "H",
+   "eyebrow": "1 · The hardware · 3 of 5",
    "title": "Who supplies the parts: market share",
    "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c1c-market-share.excalidraw.svg",
    "what": [
@@ -243,8 +66,8 @@
   },
   {
    "id": "c1d",
-   "story": "C",
-   "eyebrow": "Story C · 5 of 16",
+   "story": "H",
+   "eyebrow": "1 · The hardware · 4 of 5",
    "title": "One rack, physically",
    "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c1d-rack.excalidraw.svg",
    "what": [
@@ -255,9 +78,61 @@
    "say": "One AI rack draws what ten enterprise racks do, and it needs liquid cooling to survive it."
   },
   {
+   "id": "c3a",
+   "story": "H",
+   "eyebrow": "1 · The hardware · 5 of 5",
+   "title": "\"Memory-constrained\" doesn't mean the context window",
+   "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c3a-memory-constrained.excalidraw.svg",
+   "what": [
+    "It means HBM, in three ways: bandwidth (decode re-reads it every token), capacity (weights + KV cache per chip), and supply (three makers)",
+    "The context window is a consequence of capacity: longer context means fewer users per chip",
+    "Micron says HBM is sold out for 2026. One bit of HBM costs ~3 bits of ordinary DRAM in fab capacity"
+   ],
+   "say": "The chips aren't short of maths. They're short of fast memory, and the world has three suppliers."
+  },
+  {
+   "id": "b1",
+   "story": "M",
+   "eyebrow": "2 · Building the model · 1 of 5",
+   "title": "Compute stack: silicon to inference",
+   "img": "../architecture-diagrams/claude-on-bedrock-excalidraw/diagrams/1-compute-stack.excalidraw.svg",
+   "what": [
+    "Training is paid once per checkpoint, and again every model generation. RL post-training is a big repeated cost",
+    "Inference is the cost that grows with usage",
+    "Decode is limited by memory bandwidth, not compute (slide 7)"
+   ],
+   "say": "Training is the entry ticket. Inference is the running bill, and it scales with your users."
+  },
+  {
+   "id": "b2",
+   "story": "M",
+   "eyebrow": "2 · Building the model · 2 of 5",
+   "title": "Trained on many clouds, served per platform",
+   "img": "../architecture-diagrams/claude-on-bedrock-excalidraw/diagrams/2-distribution.excalidraw.svg",
+   "what": [
+    "Fan-in (training) and fan-out (serving) are independent",
+    "Multi-cloud compute is a supply hedge, not a request path",
+    "A Bedrock call is served on AWS end to end, on Trainium and GPU"
+   ],
+   "say": "Your request never hops to another cloud. Bedrock traffic stays on AWS."
+  },
+  {
+   "id": "c1",
+   "story": "M",
+   "eyebrow": "2 · Building the model · 3 of 5",
+   "title": "Where Claude is trained vs where it is served",
+   "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c1-silicon.excalidraw.svg",
+   "what": [
+    "Training: Project Rainier (over 1M Trainium2 chips, Indiana), up to 1M Google TPUs, and NVIDIA GPUs",
+    "Serving on Bedrock: Trainium2 and NVIDIA GPU instances. AWS doesn't publish which chip serves which model. Inferentia has no public link to Claude",
+    "HBM per chip: Trainium2 96 GB, H100 80 GB, H200 141 GB, B200 192 GB"
+   ],
+   "say": "Training happens once, somewhere big. Your Region only runs inference."
+  },
+  {
    "id": "c1e",
-   "story": "C",
-   "eyebrow": "Story C · 6 of 16",
+   "story": "M",
+   "eyebrow": "2 · Building the model · 4 of 5",
    "title": "Serving one Region vs training the model",
    "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c1e-serve-vs-train.excalidraw.svg",
    "what": [
@@ -269,21 +144,21 @@
   },
   {
    "id": "c2",
-   "story": "C",
-   "eyebrow": "Story C · 7 of 16",
+   "story": "M",
+   "eyebrow": "2 · Building the model · 5 of 5",
    "title": "How the model lands in Sydney, Melbourne and Auckland",
    "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c2-weights-to-region.excalidraw.svg",
    "what": [
     "Each Region has one Bedrock-owned model deployment account per model provider",
-    "Opus, Sonnet, Haiku: prompts and outputs aren't stored or shared. Fable 5 / Mythos 5 need <code>provider_data_share</code>: 30 days kept by Anthropic",
+    "Opus, Sonnet, Haiku: prompts and outputs aren't stored or shared. Mythos-class models (e.g. Fable 5) need <code>provider_data_share</code>: 30 days kept by Anthropic",
     "How weights are copied between Regions, replica counts and AZ placement aren't published"
    ],
    "say": "The weights are a copy AWS operates. What you send stays with AWS, except on Mythos-class models."
   },
   {
    "id": "c3",
-   "story": "C",
-   "eyebrow": "Story C · 8 of 16",
+   "story": "R",
+   "eyebrow": "3 · Serving a request · 1 of 4",
    "title": "Inside one request: prefill, then decode",
    "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c3-inside-a-request.excalidraw.svg",
    "what": [
@@ -294,35 +169,35 @@
    "say": "The first token is a compute problem. Every token after that is a memory problem."
   },
   {
-   "id": "c3a",
-   "story": "C",
-   "eyebrow": "Story C · 9 of 16",
-   "title": "\"Memory-constrained\" doesn't mean the context window",
-   "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c3a-memory-constrained.excalidraw.svg",
+   "id": "b7",
+   "story": "R",
+   "eyebrow": "3 · Serving a request · 2 of 4",
+   "title": "Why memory, not compute, is the bottleneck",
+   "img": "../architecture-diagrams/claude-on-bedrock-excalidraw/diagrams/7-decode.excalidraw.svg",
    "what": [
-    "It means HBM, in three ways: bandwidth (decode re-reads it every token), capacity (weights + KV cache per chip), and supply (three makers)",
-    "The context window is a consequence of capacity: longer context means fewer users per chip",
-    "Micron says HBM is sold out for 2026. One bit of HBM costs ~3 bits of ordinary DRAM in fab capacity"
+    "Each decoded token reads all active weights plus the KV cache from HBM, then does little math",
+    "Batching reuses each loaded byte across requests. Prefill is compute bound, decode memory bound",
+    "Longer context grows the KV cache. MoE cuts active params, not resident memory"
    ],
-   "say": "The chips aren't short of maths. They're short of fast memory, and the world has three suppliers."
+   "say": "Generating text is a memory-bandwidth problem. That's why batching and long context drive cost."
   },
   {
    "id": "c4",
-   "story": "C",
-   "eyebrow": "Story C · 10 of 16",
+   "story": "R",
+   "eyebrow": "3 · Serving a request · 3 of 4",
    "title": "Prompt caching: where the cache actually lives",
    "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c4-prompt-caching.excalidraw.svg",
    "what": [
     "The cache is the prefix's KV tensors, kept in accelerator HBM after the request ends. It isn't in the compute cores",
-    "TTL is 5 minutes by default, or 1 hour on Sonnet 4.5, Haiku 4.5 and Opus 4.5. Minimum 4,096 tokens per checkpoint on those models",
-    "Write costs 1.25× (5 min) or 2× (1 h) the input price, and a read costs 0.1×. With CRIS, expect more cache writes"
+    "TTL is 5 minutes by default, or 1 hour. Opus 5.5 and Sonnet 5.5 need at least 512 tokens per checkpoint",
+    "Writes cost 1.25× (5 min) or 2× (1 h) input. Reads cost 0.05× on Opus 5.5, 0.1× on most models. With CRIS, expect more cache writes"
    ],
    "say": "Same prefix inside the TTL means you skip most of the work and pay a tenth."
   },
   {
    "id": "c5",
-   "story": "C",
-   "eyebrow": "Story C · 11 of 16",
+   "story": "R",
+   "eyebrow": "3 · Serving a request · 4 of 4",
    "title": "Sizing: chips, memory, power, money",
    "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c5-sizing.excalidraw.svg",
    "what": [
@@ -333,48 +208,126 @@
    "say": "You're not buying GPUs. You're buying a slice of a fleet AWS keeps full."
   },
   {
+   "id": "lineup",
+   "title": "The Claude lineup on Bedrock today",
+   "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c6a-model-lineup.excalidraw.svg",
+   "what": [
+    "Opus 5.5 ($4/$20) and Sonnet 5.5 ($2/$10) shipped in Sep 2026, both with 1M context. Haiku 4.5 ($1/$5) is still the fastest",
+    "From Sydney: Opus 5.5 and Haiku 4.5 on <code>au.</code> + <code>global.</code>. Sonnet 5.5 on <code>global.</code> only at launch. Fable 5.1 on <code>global.</code>",
+    "New IDs have no date suffix: <code>anthropic.claude-opus-5-5</code>. Add <code>au.</code> or <code>global.</code> on runtime"
+   ],
+   "say": "Pick the model by capability, price and where it can run from Sydney. Those three don't always line up.",
+   "story": "B",
+   "eyebrow": "4 · Calling Claude on Bedrock · 1 of 6"
+  },
+  {
+   "id": "b3",
+   "story": "B",
+   "eyebrow": "4 · Calling Claude on Bedrock · 2 of 6",
+   "title": "Two Bedrock endpoints for Claude",
+   "img": "../architecture-diagrams/claude-on-bedrock-excalidraw/diagrams/3-endpoints.excalidraw.svg",
+   "what": [
+    "Sydney app on <code>bedrock-runtime.ap-southeast-2.amazonaws.com</code> calling <code>au.anthropic.claude-opus-5-5</code>, which keeps processing in Australia",
+    "Runtime has the AWS extras: cross-Region inference, Guardrails, structured outputs, cost per team via app inference profiles",
+    "Mantle (bare ID <code>anthropic.claude-opus-5-5</code>) is for agent features: server-side tools, web search, async jobs. In-region only"
+   ],
+   "say": "Pick the endpoint by the features you need. Price doesn't decide it."
+  },
+  {
+   "id": "b4",
+   "story": "B",
+   "eyebrow": "4 · Calling Claude on Bedrock · 3 of 6",
+   "title": "Which endpoint, which inference profile",
+   "img": "../architecture-diagrams/claude-on-bedrock-excalidraw/diagrams/4-pick-endpoint.excalidraw.svg",
+   "what": [
+    "In-region: strictest residency, lowest throughput",
+    "Geo (<code>apac.</code> <code>au.</code> <code>jp.</code> <code>us.</code> <code>eu.</code>): more throughput, processing stays in the geography",
+    "Global: most throughput at baseline price. Geo and in-region cost ~10% more (every model since Sonnet 4.5). Enforce with IAM on <code>bedrock:InferenceProfileArn</code> + SCP"
+   ],
+   "say": "Residency vs. throughput is the dial. Global is cheapest and biggest. Geo keeps processing inside the geography."
+  },
+  {
    "id": "c6",
-   "story": "C",
-   "eyebrow": "Story C · 12 of 16",
+   "story": "B",
+   "eyebrow": "4 · Calling Claude on Bedrock · 4 of 6",
    "title": "How customers consume it: APIs and the token meter",
    "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c6-consume.excalidraw.svg",
    "what": [
     "Runtime: InvokeModel, InvokeModelWithResponseStream, Converse, ConverseStream, CountTokens, plus Messages and Chat Completions",
     "Mantle: Messages, Chat Completions and Responses, in-region only. Batch goes through the <code>bedrock</code> control plane",
-    "Quota counts input + 5 × output and reserves <code>max_tokens</code>. The bill counts real tokens"
+    "Quota counts input + 5 × output and reserves <code>max_tokens</code>. The bill counts real tokens, with cache reads at 5–10% of input"
    ],
    "say": "Throttling is about the quota. Cost is about the bill. They're metered differently."
   },
   {
+   "id": "b6",
+   "story": "B",
+   "eyebrow": "4 · Calling Claude on Bedrock · 5 of 6",
+   "title": "How a runtime request burns TPM quota",
+   "img": "../architecture-diagrams/claude-on-bedrock-excalidraw/diagrams/6-quota-burndown.excalidraw.svg",
+   "what": [
+    "<code>max_tokens</code> is reserved against quota when the request starts",
+    "Output tokens count 5× for Claude 3.7 and later",
+    "No RPM limit since May 2026. Runtime has one TPM per model; mantle splits input and output"
+   ],
+   "say": "Throttling comes from the reservation, not the bill. Set max_tokens near what you actually expect."
+  },
+  {
+   "id": "c8",
+   "story": "B",
+   "eyebrow": "4 · Calling Claude on Bedrock · 6 of 6",
+   "title": "Tokens to dollars: a Sydney team of 1,000",
+   "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c8-tokens-to-dollars.excalidraw.svg",
+   "what": [
+    "1,000 devs × 50 requests × (20K in + 1K out) = 1.0B input and 50M output tokens a day",
+    "Opus 5.5 on <code>au.</code>: ~$5,500 a day without caching, ~$2,270 with 80% cache reads (~$121K vs ~$50K a month)",
+    "Sonnet 5.5 is ~$2,500 a day uncached, but only on <code>global.</code> from Sydney at launch. Quota: ~2.6M TPM on average"
+   ],
+   "say": "Caching cuts this bill by more than half. Picking the model is a residency decision as much as a price one."
+  },
+  {
+   "id": "b5",
+   "story": "D",
+   "eyebrow": "5 · Where the data goes · 1 of 4",
+   "title": "What moves with cross-Region inference",
+   "img": "../architecture-diagrams/claude-on-bedrock-excalidraw/diagrams/5-cris-path.excalidraw.svg",
+   "what": [
+    "The model runs in a destination Region",
+    "Request and response still enter and leave through the source Region",
+    "CloudWatch, CloudTrail, invocation logs and price stay with the source Region"
+   ],
+   "say": "Only the compute moves. Your logs, bill and entry point stay home."
+  },
+  {
    "id": "c7",
-   "story": "C",
-   "eyebrow": "Story C · 13 of 16",
+   "story": "D",
+   "eyebrow": "5 · Where the data goes · 2 of 4",
    "title": "Data residency: what crosses the AU and NZ border",
    "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c7-residency.excalidraw.svg",
    "what": [
-    "<code>au.</code> routes between Sydney and Melbourne, and since the NZ launch Auckland too. Confirm with <code>aws bedrock get-inference-profile</code>",
-    "Prompt and completion cross the border during processing. Logs, metrics and the bill stay in the source Region. On Fable 5 / Mythos 5, Anthropic also keeps them for 30 days",
+    "<code>au.</code> routes between Sydney, Melbourne and, since the NZ launch, Auckland. Confirm with <code>aws bedrock get-inference-profile --inference-profile-identifier au.anthropic.claude-opus-5-5</code>",
+    "Prompt and completion cross the border during processing. Logs, metrics and the bill stay in the source Region. On Mythos-class models (e.g. Fable 5), Anthropic also keeps them for 30 days",
     "<code>global.</code> can go anywhere. Lock the choice down with an IAM condition on <code>bedrock:InferenceProfileArn</code> plus an SCP"
    ],
    "say": "Pick the profile that matches your border, then make it impossible to pick another."
   },
   {
    "id": "c7a",
-   "story": "C",
-   "eyebrow": "Story C · 14 of 16",
+   "story": "D",
+   "eyebrow": "5 · Where the data goes · 3 of 4",
    "title": "The sovereignty ladder: which rung does the customer need?",
    "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c7a-sovereignty-ladder.excalidraw.svg",
    "what": [
     "Rungs: data at rest → processing location → safety-retention location → in-country inference mandate → sovereign hosting",
-    "Rung 3 is live: Fable 5 / Mythos 5 on Bedrock require <code>provider_data_share</code> (30 days with Anthropic) since June 2026",
+    "Rung 3 is live: Mythos-class models (e.g. Fable 5) on Bedrock require <code>provider_data_share</code> (30 days with Anthropic) since June 2026",
     "Reported (Bloomberg, Aug 2026): option to keep that 30-day data in your own cloud by end of 2026. Not a published policy yet"
    ],
    "say": "Most customers need rung 2, not rung 5. Find their rung before selling them sovereignty."
   },
   {
    "id": "c7b",
-   "story": "C",
-   "eyebrow": "Story C · 15 of 16",
+   "story": "D",
+   "eyebrow": "5 · Where the data goes · 4 of 4",
    "title": "Pool globally, or build in-country?",
    "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c7b-pool-vs-local.excalidraw.svg",
    "what": [
@@ -385,17 +338,95 @@
    "say": "Regulated and government workloads go in-country. Everyone else rides the global pool."
   },
   {
-   "id": "c8",
-   "story": "C",
-   "eyebrow": "Story C · 16 of 16",
-   "title": "Tokens to dollars: a Sydney team of 1,000",
-   "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c8-tokens-to-dollars.excalidraw.svg",
+   "id": "a0",
+   "story": "E",
+   "eyebrow": "6 · Example: Claude Desktop on Bedrock · 1 of 6",
+   "title": "The whole flow on one whiteboard",
+   "img": "../architecture-diagrams/claude-desktop-bedrock/story-view.excalidraw.svg",
    "what": [
-    "1,000 devs × 50 requests × (20K in + 1K out) = 1.0B input and 50M output tokens a day",
-    "Sonnet 4.5 on <code>au.</code>: ~$4,125 a day without caching, ~$1,830 with 80% cache reads",
-    "Quota: ~2.6M TPM on average (input + 5 × output). Plan 2–3× for peaks"
+    "IT configures the app, the user signs in with work SSO, the laptop talks straight to Bedrock in the customer's account",
+    "Five boxes and five numbered arrows. The next five slides walk them one at a time",
+    "No Anthropic login, no API keys, no Anthropic service in the request path"
    ],
-   "say": "Caching roughly halves this bill. Tight max_tokens protects your quota."
+   "say": "Claude Desktop is just another AWS client. It signs in like any AWS app and calls Bedrock in your own account."
+  },
+  {
+   "id": "a1",
+   "story": "E",
+   "eyebrow": "6 · Example: Claude Desktop on Bedrock · 2 of 6",
+   "title": "IT pushes the config",
+   "img": "../claude-desktop-bedrock-story/diagrams/step1.svg",
+   "what": [
+    "Jamf or Intune pushes managed settings: plist domain <code>com.anthropic.claudefordesktop</code> on Mac, <code>HKLM\\SOFTWARE\\Policies\\Claude</code> on Windows",
+    "Sets provider = Bedrock, Region, models, allowed folders and the SSO start URL",
+    "Policy is spread over several keys (<code>allowedWorkspaceFolders</code>, <code>coworkEgressAllowedHosts</code>, …). There's no single sandbox switch"
+   ],
+   "say": "IT owns the setup. The user installs nothing extra and can't point the app at another provider."
+  },
+  {
+   "id": "a2",
+   "story": "E",
+   "eyebrow": "6 · Example: Claude Desktop on Bedrock · 3 of 6",
+   "title": "User signs in with their work identity",
+   "img": "../claude-desktop-bedrock-story/diagrams/step2.svg",
+   "what": [
+    "The app opens the system browser for IAM Identity Center device sign-in",
+    "Identity Center is federated to Okta or Entra, so it's the corporate login and MFA",
+    "Signing in straight to the IdP only works behind your own auth proxy. Bedrock doesn't accept IdP tokens"
+   ],
+   "say": "Same SSO, MFA and offboarding as every other AWS app they already use."
+  },
+  {
+   "id": "a3",
+   "story": "E",
+   "eyebrow": "6 · Example: Claude Desktop on Bedrock · 4 of 6",
+   "title": "The app gets short-lived AWS credentials",
+   "img": "../claude-desktop-bedrock-story/diagrams/step3.svg",
+   "what": [
+    "Identity Center tokens sit in Keychain (Mac) or DPAPI (Windows)",
+    "Each session swaps them for permission-set role creds via <code>portal.sso</code>",
+    "Keys: <code>inferenceBedrockSso{StartUrl,Region,AccountId,RoleName}</code>. Set the permission-set session to 8–12 h"
+   ],
+   "say": "No long-lived keys on the laptop. Disable the user in the IdP and access ends with the session."
+  },
+  {
+   "id": "a4",
+   "story": "E",
+   "eyebrow": "6 · Example: Claude Desktop on Bedrock · 5 of 6",
+   "title": "Prompts go straight to Bedrock",
+   "img": "../claude-desktop-bedrock-story/diagrams/step4.svg",
+   "what": [
+    "The laptop calls Bedrock in the customer's account, SigV4-signed. Claude Code uses <code>InvokeModelWithResponseStream</code>",
+    "Models are inference profiles: <code>global.</code>, <code>us.</code>, <code>eu.</code>, <code>apac.</code>, <code>jp.</code>, <code>au.</code>",
+    "Optional VPC endpoint or LLM gateway in front. Gotcha: no shell sandbox on Windows"
+   ],
+   "say": "Your account, your Region, your network controls. Anthropic never sees the traffic."
+  },
+  {
+   "id": "a5",
+   "story": "E",
+   "eyebrow": "6 · Example: Claude Desktop on Bedrock · 6 of 6",
+   "title": "Every call is tied to a real user",
+   "img": "../claude-desktop-bedrock-story/diagrams/step5.svg",
+   "what": [
+    "CloudTrail <code>userIdentity</code> = <code>AWSReservedSSO_&lt;PermSet&gt;/&lt;user&gt;</code>",
+    "CUR 2.0 IAM principal cost allocation adds <code>line_item_iam_principal</code>, so cost per user",
+    "A Bedrock API key is shared and breaks per-user attribution, so avoid it. OTel export also carries <code>enduser.id</code>"
+   ],
+   "say": "Audit and chargeback come built in. Who called which model, and what it cost."
+  },
+  {
+   "id": "end",
+   "title": "Recap: the whole story in one picture",
+   "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c0-overview.excalidraw.svg",
+   "what": [
+    "Hardware: accelerators live and die by HBM. Three companies make it, and it's sold out",
+    "Model: trained elsewhere at gigawatt scale, then copied into Bedrock accounts in each Region. Serving: prefill, decode, KV cache in HBM",
+    "Bedrock: pick model, endpoint and profile, then quota and bill follow. Data: pick the sovereignty rung the customer actually needs"
+   ],
+   "say": "Silicon, model, serving, Bedrock, data rules, and one real deployment. That's the whole path from a chip to a prompt in Sydney.",
+   "story": "Z",
+   "eyebrow": "Recap"
   }
  ]
 }

@@ -40,7 +40,7 @@ Source: `bsnehanshu/claw-workspace/architecture.md`. Checked against the AWS doc
 | 10 | CRIS, Guardrails, prompt routing runtime-only; server tools, web search, async, Projects, Workspaces mantle-only | Correct | |
 | 11 | Same per-token price on both endpoints | Correct | Pick on capability, not cost. |
 | 12 | IAM on `bedrock:InferenceProfileArn`; logs stay in source region | Correct | Add an SCP for org-wide enforcement. |
-| 13 | Mantle short IDs, e.g. `anthropic.claude-opus-4-8` | Correct | Opus 4.8 GA 28 May 2026. |
+| 13 | Mantle short IDs, e.g. `anthropic.claude-opus-5-5` | Correct | Opus 4.8 GA 28 May 2026. |
 
 ## Added
 

@@ -23,7 +23,7 @@ D["c0-overview"] = () => {
   s.arrow("app", "r", "ep", "l", { ta: 0.5, tb: 0.5, label: "4 · prompt" });
   s.arrow("ep", "t", "fleet", "b", { both: true, label: "5 · tokens" });
   s.arrow("app", "l", "gov", "r", { label: "6" });
-  s.text(-30, 580, "1 train · 2 ship the checkpoint to each Region · 3 load onto the fleet · 4 your app calls Sydney · 5 tokens stream back · 6 logs and billing stay in your account.\nException: Mythos-class models (Fable 5, Mythos 5) share prompts and outputs with Anthropic for 30 days (see C7a).", { fs: 17, color: C.muted });
+  s.text(-30, 580, "1 train · 2 ship the checkpoint to each Region · 3 load onto the fleet · 4 your app calls Sydney · 5 tokens stream back · 6 logs and billing stay in your account.\nException: Mythos-class models (e.g. Fable 5) share prompts and outputs with Anthropic for 30 days (see C7a).", { fs: 17, color: C.muted });
   return s;
 };
 
@@ -192,7 +192,7 @@ D["c2-weights-to-region"] = () => {
     s.arrow(`${id}d`, "r", `${id}f`, "l");
   });
   s.text(0, 400, "dashed = packaging, encryption and\ntransfer between Regions: not published", { fs: 15, color: C.muted });
-  s.card("doc", 0, 680, "Documented", "Anthropic can't access the deployment accounts or their logs.\nOpus, Sonnet, Haiku: prompts and outputs aren't\nstored or shared, and aren't used for training.\nFable 5 / Mythos 5 are the exception (C7a).", { w: 620, color: C.blue, align: "left", bfs: 16 });
+  s.card("doc", 0, 680, "Documented", "Anthropic can't access the deployment accounts or their logs.\nOpus, Sonnet, Haiku: prompts and outputs aren't\nstored or shared, and aren't used for training.\nMythos-class models (e.g. Fable 5) are the exception.", { w: 620, color: C.blue, align: "left", bfs: 16 });
   s.card("not", 660, 680, "Not published", "how weights are copied between Regions\nhow many replicas each Region runs\nwhich Availability Zones hold them\nwhich chip type serves which model", { w: 620, color: C.gray, align: "left", bfs: 16, dashed: true });
   return s;
 };
@@ -239,15 +239,15 @@ D["c4-prompt-caching"] = () => {
   s.card("turn1", 0, 0, "Turn 1", "50,000-token system prompt + docs\n+ a question", { w: 400, h: 110, color: C.gray });
   s.card("p1", 0, 180, "Full prefill", "all 50,000 tokens computed\ncache write: 1.25× input price (5 min)\nor 2× (1 hour)", { w: 400, h: 130, color: C.red, bfs: 15 });
   s.card("turn2", 860, 0, "Turn 2, three minutes later", "same 50,000-token prefix\n+ a new question", { w: 400, h: 110, color: C.gray });
-  s.card("p2", 860, 180, "Short prefill", "only the new tokens are computed\ncache read: 0.1× input price\nfaster time to first token", { w: 400, h: 130, color: C.green, bfs: 15 });
+  s.card("p2", 860, 180, "Short prefill", "only the new tokens are computed\ncache read: 0.05× input on Opus 5.5\n(0.1× on most models)\nfaster time to first token", { w: 400, h: 130, color: C.green, bfs: 15 });
   s.zone("hbm", 0, 390, 1260, 240, "", { color: C.blue, fill: "#e7f5ff" });
   s.text(1240, 585, "Accelerator HBM in the Region that served turn 1", { fs: 20, color: C.blue[0], align: "right" });
-  s.card("kv", 330, 450, "Cached prefix (KV tensors)", "kept for the TTL: 5 minutes by default, 1 hour on\nSonnet 4.5, Haiku 4.5, Opus 4.5 · min 4,096 tokens per checkpoint", { w: 600, h: 110, color: C.yellow, bfs: 15 });
+  s.card("kv", 330, 450, "Cached prefix (KV tensors)", "kept for the TTL: 5 minutes by default, or 1 hour\nmin 512 tokens per checkpoint on Opus 5.5 and Sonnet 5.5", { w: 600, h: 110, color: C.yellow, bfs: 15 });
   s.arrow("turn1", "b", "p1", "t");
   s.arrow("turn2", "b", "p2", "t");
   s.arrow("p1", "b", "kv", "l", { via: [[200, 505]], label: "write" });
   s.arrow("kv", "r", "p2", "b", { via: [[1060, 505]], label: "read on exact prefix match" });
-  s.text(0, 680, "With cross-Region inference, turn 2 can land in a different Region and miss the cache, so expect more cache writes.\nAWS doesn't publish whether cached prefixes also spill to host memory or SSD.\nAu. price for Sonnet 4.5: input $3.30/MTok · cache write $4.125 (5 min) or $6.60 (1 h) · cache read $0.33.", { fs: 17, color: C.muted });
+  s.text(0, 680, "With cross-Region inference, turn 2 can land in a different Region and miss the cache, so expect more cache writes.\nAWS doesn't publish whether cached prefixes also spill to host memory or SSD.\nOpus 5.5 list price: input $4/MTok · cache write $5 (5 min) or $8 (1 h) · cache read $0.20. On au., add ~10%.", { fs: 17, color: C.muted });
   return s;
 };
 
@@ -283,7 +283,7 @@ D["c6-consume"] = () => {
   [1, 2].forEach((i) => s.arrow(`c${i}`, "r", "rt", "l", { tb: i === 1 ? 0.3 : 0.7 }));
   s.card("tok", 940, 0, "Tokens in one call", "input · cache write · cache read · output", { w: 400, h: 110, color: C.yellow, bfs: 15 });
   s.card("quota", 940, 160, "Quota (runtime TPM)", "input + 5 × output (Claude 3.7+)\nmax_tokens reserved at the start\nno RPM limit", { w: 400, h: 130, color: C.red, bfs: 15 });
-  s.card("bill", 940, 330, "Bill", "input + output at list price\ncache write 1.25× or 2× · cache read 0.1×\nau. or in-region ≈ 10% over global.", { w: 400, h: 130, color: C.green, bfs: 15 });
+  s.card("bill", 940, 330, "Bill", "input + output at list price\ncache write 1.25× or 2× · cache read 0.05–0.1×\nau. or in-region ≈ 10% over global.", { w: 400, h: 130, color: C.green, bfs: 15 });
   s.arrow("rt", "r", "tok", "l", { ta: 0.4 });
   s.arrow("tok", "b", "quota", "t"); s.arrow("quota", "b", "bill", "t", { dashed: true, none: true });
   s.text(0, 520, "Throttling comes from the quota, cost comes from the bill. The same 1,000 output tokens burn 5,000 TPM but bill as 1,000.\nBatch jobs go through the bedrock control-plane API instead (CreateModelInvocationJob, input and output files in S3).", { fs: 17, color: C.muted });
@@ -306,8 +306,8 @@ D["c7-residency"] = () => {
   s.arrow("syd", "r", "anyw", "t", { ta: 0.8, tb: 0.2, via: [[480, 140], [480, 470]], dashed: true, label: "global.", at: 0.45 });
   s.card("x", 1240, 0, "Crosses the border", "prompt and completion,\nencrypted in transit on the\nAWS network, while processed", { w: 340, h: 140, color: C.red, bfs: 15 });
   s.card("stay", 1240, 170, "Stays in the source Region", "CloudTrail · CloudWatch\ninvocation logs · bill", { w: 340, h: 120, color: C.green, bfs: 15 });
-  s.card("none", 1240, 320, "Stored? Depends on the model", "Opus · Sonnet · Haiku: not stored,\nnot shared with Anthropic\nFable 5 / Mythos 5: kept 30 days\nby Anthropic (provider_data_share)", { w: 340, h: 160, color: C.gray, bfs: 15 });
-  s.text(0, 660, "Check the real destination list: aws bedrock get-inference-profile --inference-profile-identifier au.anthropic.claude-sonnet-4-5-20250929-v1:0\nNZ data on au. can be processed in Australia. In-region keeps it in one Region, if the model is offered there.\nEnforce with an IAM condition on bedrock:InferenceProfileArn plus an SCP. Residency is about location; sovereignty (whose law applies) is a question for legal.", { fs: 16, color: C.muted });
+  s.card("none", 1240, 320, "Stored? Depends on the model", "Opus · Sonnet · Haiku: not stored,\nnot shared with Anthropic\nMythos-class (e.g. Fable 5): kept\n30 days by Anthropic", { w: 340, h: 160, color: C.gray, bfs: 15 });
+  s.text(0, 660, "Check the real destination list: aws bedrock get-inference-profile --inference-profile-identifier au.anthropic.claude-opus-5-5\nNZ data on au. can be processed in Australia. In-region keeps it in one Region, if the model is offered there.\nEnforce with an IAM condition on bedrock:InferenceProfileArn plus an SCP. Residency is about location; sovereignty (whose law applies) is a question for legal.", { fs: 16, color: C.muted });
   return s;
 };
 
@@ -318,7 +318,7 @@ D["c7a-sovereignty-ladder"] = () => {
   const rungs = [
     ["r1", "1 · Data at rest", "S3, logs, knowledge bases stay in ap-southeast-2", "solved by AWS Regions", C.green],
     ["r2", "2 · Processing location", "in-region or au. profile, enforced with IAM + SCP", "available now (C7)", C.green],
-    ["r3", "3 · Safety retention location", "Fable 5 / Mythos 5: 30 days kept by Anthropic today\n(Bedrock: provider_data_share, mandatory)", "reported: option to keep it in\nyour own cloud, by end of 2026", C.yellow],
+    ["r3", "3 · Safety retention location", "Mythos-class models (e.g. Fable 5): 30 days kept by Anthropic\n(Bedrock: provider_data_share, mandatory)", "reported: option to keep it in\nyour own cloud, by end of 2026", C.yellow],
     ["r4", "4 · In-country inference mandate", "law says the model must run in-country", "AU: AI and data-centre rules,\nbills expected early 2027", C.orange],
     ["r5", "5 · Sovereign hosting", "government-cleared fleets or national models\n(e.g. NZ Kererū.ai, India IndiaAI)", "niche, expensive, growing", C.red],
   ];
@@ -339,7 +339,7 @@ D["c7b-pool-vs-local"] = () => {
   s.header(0, -150, "Pool globally, or build in-country?", "Economics pulls toward one global pool. Politics pulls toward local fleets.");
   s.zone("eco", 0, 0, 660, 380, "Economics → pool globally", { color: C.green });
   s.card("e1", 30, 60, "Scarce chips go further pooled", "one global fleet absorbs peaks\nfrom every Region at once", { w: 600, h: 120, color: C.green, bfs: 16 });
-  s.card("e2", 30, 220, "So global. is the cheapest profile", "geo and in-region cost ~10% more\n(Sonnet 4.5 and later)", { w: 600, h: 120, color: C.green, bfs: 16 });
+  s.card("e2", 30, 220, "So global. is the cheapest profile", "geo and in-region cost ~10% more\n(every model since Sonnet 4.5)", { w: 600, h: 120, color: C.green, bfs: 16 });
   s.zone("pol", 760, 0, 660, 380, "Politics → build in-country", { color: C.red });
   s.card("p1", 790, 60, "Australia", "National AI Plan · data-centre capacity\n1,350 MW (2024) → 3,100 MW (2030 forecast)", { w: 600, h: 120, color: C.red, bfs: 16 });
   s.card("p2", 790, 220, "Rest of APJ", "Korea: national AI centre, 15,000 chips by 2028\nIndia: ~34,000 GPUs via IndiaAI · NZ: Kererū.ai", { w: 600, h: 120, color: C.red, bfs: 16 });
@@ -354,13 +354,32 @@ D["c7b-pool-vs-local"] = () => {
 // C8. Tokens to dollars --------------------------------------------------------
 D["c8-tokens-to-dollars"] = () => {
   const s = new Scene();
-  s.header(0, -150, "Tokens to dollars: a Sydney team of 1,000", "Claude Sonnet 4.5 on the au. profile: $3.30 per million input tokens, $16.50 per million output tokens");
+  s.header(0, -150, "Tokens to dollars: a Sydney team of 1,000", "Claude Opus 5.5 on the au. profile: ~$4.40 per million input tokens, ~$22 per million output (list + ~10% regional)");
   s.card("in", 0, 0, "The workload", "1,000 developers × 50 requests a day\n20,000 input + 1,000 output tokens each\n= 1.0B input + 50M output tokens a day", { w: 480, h: 150, color: C.gray, bfs: 16 });
-  s.card("no", 580, -60, "Without caching", "input 1.0B × $3.30/M = $3,300\noutput 50M × $16.50/M = $825\n≈ $4,125 a day ≈ $90K a month (22 days)", { w: 520, h: 150, color: C.red, bfs: 16 });
-  s.card("yes", 580, 140, "With caching (80% read, 10% written)", "read 800M × $0.33/M = $264\nwrite 100M × $4.125/M = $413 · rest 100M × $3.30/M = $330\noutput $825 → ≈ $1,830 a day ≈ $40K a month", { w: 520, h: 150, color: C.green, bfs: 16 });
+  s.card("no", 580, -60, "Without caching", "input 1.0B × $4.40/M = $4,400\noutput 50M × $22/M = $1,100\n≈ $5,500 a day ≈ $121K a month (22 days)", { w: 560, h: 150, color: C.red, bfs: 16 });
+  s.card("yes", 580, 140, "With caching (80% read, 10% written)", "read 800M × $0.22/M = $176\nwrite 100M × $5.50/M = $550 · rest 100M × $4.40/M = $440\noutput $1,100 → ≈ $2,270 a day ≈ $50K a month", { w: 560, h: 150, color: C.green, bfs: 16 });
   s.arrow("in", "r", "no", "l", { tb: 0.6 }); s.arrow("in", "r", "yes", "l", { tb: 0.4 });
-  s.card("q", 0, 360, "Quota to ask for", "50,000 requests over an 8-hour day ≈ 104 per minute\n× (20,000 input + 5 × 1,000 output) ≈ 2.6M TPM on average\nplan 2–3× for peaks, and keep max_tokens tight", { w: 1100, color: C.yellow, bfs: 16 });
-  s.text(0, 530, "Every number here is an assumption you can swap. The method stays the same: tokens × price for the bill, (input + 5 × output) per minute for the quota.", { fs: 17, color: C.muted });
+  s.card("q", 0, 360, "Quota to ask for", "50,000 requests over an 8-hour day ≈ 104 per minute\n× (20,000 input + 5 × 1,000 output) ≈ 2.6M TPM on average\nplan 2–3× for peaks, and keep max_tokens tight", { w: 1140, color: C.yellow, bfs: 16 });
+  s.text(0, 530, "Cheaper option: Sonnet 5.5 at $2 / $10 is ≈ $2,500 a day uncached, but in Sydney it's on global. only (at launch), so processing can leave Australia.\nEvery number here is an assumption you can swap: tokens × price for the bill, (input + 5 × output) per minute for the quota.", { fs: 17, color: C.muted });
+  return s;
+};
+
+// C6a. Model lineup ------------------------------------------------------------
+D["c6a-model-lineup"] = () => {
+  const s = new Scene();
+  s.header(0, -150, "The Claude lineup on Bedrock today (Oct 2026)", "Price per million input / output tokens · context window · what you can call from Sydney");
+  const rows = [
+    ["fab", "Claude Fable 5.1", "$10 / $50 · 1M context", "global. (regional only in us-east-1)\nMythos-class family: check data retention first", C.red],
+    ["opu", "Claude Opus 5.5", "$4 / $20 · 1M context · Sep 2026", "au. and global.\nanthropic.claude-opus-5-5 · cache reads 5% of input", C.purple],
+    ["son", "Claude Sonnet 5.5", "$2 / $10 · 1M context · Sep 2026", "global. only, at launch\nanthropic.claude-sonnet-5-5 · best speed for the price", C.blue],
+    ["hai", "Claude Haiku 4.5", "$1 / $5 · 200K context", "au. and global.\nfastest and cheapest", C.green],
+  ];
+  rows.forEach(([id, name, price, where, col], i) => {
+    const y = i * 150;
+    s.card(id, 0, y, name, price, { w: 520, h: 120, color: col, align: "left", tfs: 24, bfs: 17 });
+    s.card(id + "w", 560, y, "From Sydney", where, { w: 760, h: 120, color: [col[0], "#ffffff"], align: "left", bfs: 17 });
+  });
+  s.text(0, 620, "No date suffix on the new IDs. Add au. or global. for cross-Region inference on bedrock-runtime; mantle takes the bare ID, in-region only.\nRegional (au., in-region) costs ~10% more than global. Availability changes fast: check the Bedrock model card before you quote a customer.", { fs: 16, color: C.muted });
   return s;
 };
 
