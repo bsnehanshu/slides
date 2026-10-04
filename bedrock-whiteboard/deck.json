@@ -192,7 +192,7 @@
   {
    "id": "c1",
    "story": "C",
-   "eyebrow": "Story C · 1 of 8",
+   "eyebrow": "Story C · 1 of 13",
    "title": "Where Claude is trained vs where it is served",
    "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c1-silicon.excalidraw.svg",
    "what": [
@@ -203,9 +203,74 @@
    "say": "Training happens once, somewhere big. Your Region only runs inference."
   },
   {
+   "id": "c1a",
+   "story": "C",
+   "eyebrow": "Story C · 2 of 13",
+   "title": "Anatomy of one accelerator",
+   "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c1a-anatomy.excalidraw.svg",
+   "what": [
+    "One package: a compute die (cores + tens of MB of SRAM) ringed by HBM stacks on a TSMC CoWoS interposer",
+    "HBM moves TB/s to the die. Host DRAM sits behind PCIe (~64 GB/s each way), so weights and KV cache live in HBM",
+    "NVLink, NeuronLink and TPU ICI join packages so one model can span 8–64+ chips"
+   ],
+   "say": "The memory is part of the chip. That's why HBM capacity decides how much model fits."
+  },
+  {
+   "id": "c1b",
+   "story": "C",
+   "eyebrow": "Story C · 3 of 13",
+   "title": "NVIDIA vs Trainium vs Google TPU: memory per chip",
+   "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c1b-chip-lineup.excalidraw.svg",
+   "what": [
+    "NVIDIA: H100 80 GB → H200 141 GB → B200 192 GB → B300 288 GB, at up to 8 TB/s",
+    "Trainium2 96 GB / 2.9 TB/s → Trainium3 144 GB / 4.9 TB/s. TPU v5p 95 GB, Trillium 32 GB, Ironwood 192 GB / 7.4 TB/s",
+    "NVIDIA sells everywhere. Trainium is AWS-only, TPU is Google-Cloud-only. Claude runs on all three"
+   ],
+   "say": "Three chip families, one pattern: more HBM and more bandwidth every generation."
+  },
+  {
+   "id": "c1c",
+   "story": "C",
+   "eyebrow": "Story C · 4 of 13",
+   "title": "Who supplies the parts: market share",
+   "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c1c-market-share.excalidraw.svg",
+   "what": [
+    "HBM, Q2 2026 (Counterpoint): SK hynix 50%, Samsung 33%, Micron 18%. SK hynix was 64% a year earlier",
+    "AI accelerators, 2026 estimates: NVIDIA ~75–85%, custom chips ~15–20% (TPU ~6–8%, Trainium ~2–3%), AMD ~5–7%",
+    "Every accelerator needs HBM, so HBM supply caps how fast anyone adds capacity"
+   ],
+   "say": "Three companies make all the HBM. NVIDIA still sells most accelerators, but custom chips are growing."
+  },
+  {
+   "id": "c1d",
+   "story": "C",
+   "eyebrow": "Story C · 5 of 13",
+   "title": "One rack, physically",
+   "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c1d-rack.excalidraw.svg",
+   "what": [
+    "GB200 NVL72: 18 compute trays (2 Grace CPUs + 4 Blackwell GPUs each), 9 NVLink switch trays, power shelves",
+    "72 GPUs, 13.4 TB HBM3e, 130 TB/s NVLink, ~120 kW, liquid-cooled, ~1.36 tonnes",
+    "AWS: Trn2 UltraServer 64 chips / 6 TiB. Trn3 UltraServer up to 144 chips / 20.7 TB. Rack power isn't published"
+   ],
+   "say": "One AI rack draws what ten enterprise racks do, and it needs liquid cooling to survive it."
+  },
+  {
+   "id": "c1e",
+   "story": "C",
+   "eyebrow": "Story C · 6 of 13",
+   "title": "Serving one Region vs training the model",
+   "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c1e-serve-vs-train.excalidraw.svg",
+   "what": [
+    "Inference: many independent replicas near users, across AZs, sized for peak. Fleet size isn't published",
+    "Pretraining: one synchronous job on one tightly coupled site. Project Rainier: ~500K Trainium2 at launch, 2.2 GW planned",
+    "RL post-training: generate rollouts, score them, update weights. Repeated for every model version"
+   ],
+   "say": "Sydney runs replicas of a finished model. Building the model takes a gigawatt campus somewhere else."
+  },
+  {
    "id": "c2",
    "story": "C",
-   "eyebrow": "Story C · 2 of 8",
+   "eyebrow": "Story C · 7 of 13",
    "title": "How the model lands in Sydney, Melbourne and Auckland",
    "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c2-weights-to-region.excalidraw.svg",
    "what": [
@@ -218,7 +283,7 @@
   {
    "id": "c3",
    "story": "C",
-   "eyebrow": "Story C · 3 of 8",
+   "eyebrow": "Story C · 8 of 13",
    "title": "Inside one request: prefill, then decode",
    "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c3-inside-a-request.excalidraw.svg",
    "what": [
@@ -231,7 +296,7 @@
   {
    "id": "c4",
    "story": "C",
-   "eyebrow": "Story C · 4 of 8",
+   "eyebrow": "Story C · 9 of 13",
    "title": "Prompt caching: where the cache actually lives",
    "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c4-prompt-caching.excalidraw.svg",
    "what": [
@@ -244,7 +309,7 @@
   {
    "id": "c5",
    "story": "C",
-   "eyebrow": "Story C · 5 of 8",
+   "eyebrow": "Story C · 10 of 13",
    "title": "Sizing: chips, memory, power, money",
    "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c5-sizing.excalidraw.svg",
    "what": [
@@ -257,7 +322,7 @@
   {
    "id": "c6",
    "story": "C",
-   "eyebrow": "Story C · 6 of 8",
+   "eyebrow": "Story C · 11 of 13",
    "title": "How customers consume it: APIs and the token meter",
    "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c6-consume.excalidraw.svg",
    "what": [
@@ -270,7 +335,7 @@
   {
    "id": "c7",
    "story": "C",
-   "eyebrow": "Story C · 7 of 8",
+   "eyebrow": "Story C · 12 of 13",
    "title": "Data residency: what crosses the AU and NZ border",
    "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c7-residency.excalidraw.svg",
    "what": [
@@ -283,7 +348,7 @@
   {
    "id": "c8",
    "story": "C",
-   "eyebrow": "Story C · 8 of 8",
+   "eyebrow": "Story C · 13 of 13",
    "title": "Tokens to dollars: a Sydney team of 1,000",
    "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c8-tokens-to-dollars.excalidraw.svg",
    "what": [
