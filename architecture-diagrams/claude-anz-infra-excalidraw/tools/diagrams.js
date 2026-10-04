@@ -311,6 +311,36 @@ D["c7-residency"] = () => {
   return s;
 };
 
+// C7c. Who processes your data ----------------------------------------------------
+D["c7c-who-processes"] = () => {
+  const s = new Scene();
+  s.header(0, -170, "\"Claude on AWS\": two products, one exception", "Billing through AWS doesn't mean AWS processes your data. Ask one question: who runs the inference that sees the prompt?");
+  s.box("app", 520, -60, "Your app, in your AWS account (IAM, SigV4, CloudTrail)", { w: 520, h: 64, color: C.gray, fs: 18 });
+  const col = (id, x, title, sub, color, rows) => {
+    s.zone(id, x, 60, 500, 620, "", { color });
+    s.card(`${id}h`, x + 20, 80, title, sub, { w: 460, h: 110, color, tfs: 22, bfs: 15 });
+    rows.forEach(([t, b], i) => s.card(`${id}${i}`, x + 20, 215 + i * 150, t, b, { w: 460, h: 130, color: [color[0], "#ffffff"], align: "left", bfs: 15 }));
+  };
+  col("bed", 0, "Claude in Amazon Bedrock", "bedrock-runtime / bedrock-mantle · Opus, Sonnet, Haiku", C.orange, [
+    ["Runs inference · data processor", "AWS, in AWS-operated accounts\nAnthropic has zero operator access"],
+    ["Who sees prompts and outputs", "only AWS systems, not stored,\nnot shared with Anthropic"],
+    ["Where it can run", "one Region, au., or global.\nAWS compliance programs apply"],
+  ]);
+  col("myt", 520, "Bedrock + Mythos-class", "e.g. Claude Fable 5 · provider_data_share", C.yellow, [
+    ["Runs inference · data processor", "AWS"],
+    ["Who sees prompts and outputs", "AWS, plus a copy to Anthropic\nkept 30 days for safety review"],
+    ["Where it can run", "per model card\n(Fable 5.1 regional only in us-east-1)"],
+  ]);
+  col("cpa", 1040, "Claude Platform on AWS", "AWS Marketplace · aws-external-anthropic.{region}.api.aws", C.purple, [
+    ["Runs inference · data processor", "Anthropic, under Anthropic's data terms\nAWS processes billing (CCUs) and identity only"],
+    ["Who sees prompts and outputs", "Anthropic: prompts, outputs, files,\nSkills, batches · Claude API retention,\nZero Data Retention on request"],
+    ["Where it can run", "inference_geo: US (1.1×) or Global\nno AU option · workspace Region ≠\nwhere inference runs"],
+  ]);
+  s.arrow("app", "b", "bedh", "t", { ta: 0.15 }); s.arrow("app", "b", "myth", "t"); s.arrow("app", "b", "cpah", "t", { ta: 0.85 });
+  s.text(0, 720, "Why pick Claude Platform on AWS anyway: the full Claude API on day one (Skills, code execution, web search, batches, Managed Agents), billed on the AWS invoice.\nWhy pick Bedrock: AWS as the only data processor, AU residency, and AWS compliance programs. Our read: ANZ regulated customers usually land here.", { fs: 17, color: C.muted });
+  return s;
+};
+
 // C7a. The sovereignty ladder ------------------------------------------------------
 D["c7a-sovereignty-ladder"] = () => {
   const s = new Scene();
