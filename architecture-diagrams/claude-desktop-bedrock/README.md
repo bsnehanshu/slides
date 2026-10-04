@@ -6,7 +6,7 @@
 - `architecture.png`: 2800×1860 export for slides
 - `story-view.excalidraw.svg`: simple 5-step whiteboard version for explaining the flow. GitHub renders it, and excalidraw.com can open it for editing because the scene is embedded in the SVG.
 - `story-view.excalidraw`: the same scene as a plain Excalidraw file.
-- Step-by-step slides: [`claude-desktop-bedrock-story`](../../claude-desktop-bedrock-story/)
+- `steps/step1-5.svg`: one Excalidraw diagram per step, used in chapter 6 of [Bedrock Whiteboard](../../bedrock-whiteboard/)
 
 ### Story view, 5 steps
 
