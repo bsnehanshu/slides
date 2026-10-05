@@ -177,6 +177,28 @@ D["c1e-serve-vs-train"] = () => {
   return s;
 };
 
+// C1f. Pretraining data and where safety goes in ---------------------------------
+D["c1f-pretraining-data"] = () => {
+  const s = new Scene();
+  s.header(0, -150, "From raw data to a checkpoint: where safety goes in", "Safety starts before training. Harmful weapons content is filtered out of the data, then values are trained in, then it's tested.");
+  const W = 290, G = 40;
+  const steps = [
+    ["s1", "1 · Collect", "public web: crawler follows\nrobots.txt, skips password-\nand login-gated pages\nlicensed third-party data\nopted-in user data · synthetic", C.gray],
+    ["s2", "2 · Clean and filter", "deduplication\nquality classifiers\nCBRN filter: strips chemical,\nbiological, radiological and\nnuclear weapons content", C.red],
+    ["s3", "3 · Pretrain", "next-token prediction\non the filtered corpus\none giant job (C1e)", C.purple],
+    ["s4", "4 · Post-train", "RLHF + Constitutional AI\nClaude's constitution:\nvalues, character,\nwhen to decline", C.orange],
+    ["s5", "5 · Evaluate", "Responsible Scaling Policy\nCBRN, cyber, autonomy evals\n→ which safeguards\nship with the model", C.blue],
+  ];
+  steps.forEach(([id, t, b, col], i) => s.card(id, i * (W + G), 0, t, b, { w: W, h: 230, color: col, bfs: 15 }));
+  for (let i = 1; i < 5; i++) s.arrow(`s${i}`, "r", `s${i + 1}`, "l");
+  s.box("ck", 1290, 300, "checkpoint\n+ its classifiers (C3b)", { shape: "ellipse", w: 300, h: 120, color: C.yellow, fs: 18 });
+  s.arrow("s5", "b", "ck", "t");
+  s.card("cbrn", 0, 300, "What the CBRN filter buys (Anthropic research, Aug 2025)", "A small fine-tuned classifier screened the whole pretraining corpus for weapons content.\nHarmful-knowledge eval (WMDP): 33.7% → 30.8%, where chance is 25%. A third of the above-chance knowledge gone.\nNo significant drop on prose, code, MMLU or natural science. The model never learns what it never saw.", { w: 1230, color: C.red, align: "left", bfs: 16 });
+  s.card("not", 0, 500, "Not in this pipeline: your Bedrock traffic", "Bedrock doesn't use prompts or outputs to train any model. Opus, Sonnet, Haiku: nothing is shared with Anthropic.", { w: 1230, color: C.blue, align: "left", bfs: 16 });
+  s.text(0, 640, "Sources: Claude system cards (training data), Anthropic Alignment blog \"Pretraining data filtering\" (19 Aug 2025), Anthropic Responsible Scaling Policy.\nNot published: corpus size and mix, and how the research filter is tuned for each production model.", { fs: 16, color: C.muted });
+  return s;
+};
+
 // C2. How weights land in a Region ------------------------------------------
 D["c2-weights-to-region"] = () => {
   const s = new Scene();
@@ -248,6 +270,30 @@ D["c4-prompt-caching"] = () => {
   s.arrow("p1", "b", "kv", "l", { via: [[200, 505]], label: "write" });
   s.arrow("kv", "r", "p2", "b", { via: [[1060, 505]], label: "read on exact prefix match" });
   s.text(0, 680, "With cross-Region inference, turn 2 can land in a different Region and miss the cache, so expect more cache writes.\nAWS doesn't publish whether cached prefixes also spill to host memory or SSD.\nOpus 5.5 list price: input $4/MTok · cache write $5 (5 min) or $8 (1 h) · cache read $0.20. On au., add ~10%.", { fs: 17, color: C.muted });
+  return s;
+};
+
+// C3b. Safety classifiers at serving time --------------------------------------------
+D["c3b-classifiers"] = () => {
+  const s = new Scene();
+  s.header(0, -150, "Classifiers run alongside every request", "Training is layer 1. Classifiers are layer 2: they ship with the model and run on every platform, Bedrock included.");
+  s.card("p", 0, 60, "Your prompt", "bedrock-runtime\nor mantle", { w: 220, h: 110, color: C.gray, bfs: 15 });
+  s.zone("srv", 270, 0, 900, 200, "Around the model · Anthropic-built, runs wherever Claude runs", { color: C.green });
+  s.card("ic", 300, 60, "Input classifier", "screens the prompt\nbefore any output", { w: 240, h: 110, color: C.red, bfs: 15 });
+  s.card("m", 600, 60, "Claude", "decodes token by token (C3)\ncan also decline in plain text", { w: 260, h: 110, color: C.green, bfs: 15 });
+  s.card("oc", 910, 60, "Output classifier", "watches the stream\ncan stop it mid-answer", { w: 230, h: 110, color: C.red, bfs: 15 });
+  s.card("app", 1230, 60, "Your app", "reads stop_reason", { w: 220, h: 110, color: C.gray, bfs: 15 });
+  s.arrow("p", "r", "ic", "l"); s.arrow("ic", "r", "m", "l"); s.arrow("m", "r", "oc", "l"); s.arrow("oc", "r", "app", "l");
+  const out = [
+    ["o1", "Answered", "stop_reason: end_turn", C.green],
+    ["o2", "Classifier refusal", "HTTP 200, not an error\nstop_reason: refusal\nstop_details.category\ndiscard any partial output", C.red],
+    ["o3", "Model declines", "a normal text reply\nno flag set", C.yellow],
+    ["o4", "Input rejected", "HTTP 400\nvalidation or copyright", C.gray],
+  ];
+  out.forEach(([id, t, b, col], i) => s.card(id, i * 370, 260, t, b, { w: 340, h: 150, color: col, bfs: 15 }));
+  s.card("cat", 0, 460, "stop_details.category", "cyber · bio · frontier_llm (building competing models) · reasoning_extraction · general_harms (rest of the Usage Policy)\nNo category of its own for chemical, radiological or nuclear: those decline as general_harms, a null category, or in plain text.\nBilled if refused before any output: bio, frontier_llm, reasoning_extraction. Every refusal still counts against your quota.", { w: 1450, color: C.gray, align: "left", bfs: 16 });
+  s.card("nuc", 0, 640, "Example: nuclear", "Anthropic and the US NNSA built a classifier that separates concerning from benign nuclear conversations, 96% accurate in testing.\nIt runs in Anthropic's misuse detection (Aug 2025). The point: nuclear energy and medicine questions get through, weapons questions don't.", { w: 1450, color: C.purple, align: "left", bfs: 16 });
+  s.text(0, 810, "Models with refusal classifiers: Fable 5.1, Fable 5, Opus 5.5, Opus 5, Sonnet 5.5 (Anthropic refusals and fallback docs, Oct 2026). What to do about a refusal: C6b.", { fs: 16, color: C.muted });
   return s;
 };
 
@@ -398,6 +444,27 @@ D["c8-tokens-to-dollars"] = () => {
   s.arrow("in", "r", "no", "l", { tb: 0.6 }); s.arrow("in", "r", "yes", "l", { tb: 0.4 });
   s.card("q", 0, 360, "Quota to ask for", "50,000 requests over an 8-hour day ≈ 104 per minute\n× (20,000 input + 5 × 1,000 output) ≈ 2.6M TPM on average\nplan 2–3× for peaks, and keep max_tokens tight", { w: 1140, color: C.yellow, bfs: 16 });
   s.text(0, 530, "Cheaper option: Sonnet 5.5 at $2 / $10 is ≈ $2,500 a day uncached, but in Sydney it's on global. only (at launch), so processing can leave Australia.\nEvery number here is an assumption you can swap: tokens × price for the bill, (input + 5 × output) per minute for the quota.", { fs: 17, color: C.muted });
+  return s;
+};
+
+// C6b. Handling a refusal ------------------------------------------------------------
+D["c6b-refusals"] = () => {
+  const s = new Scene();
+  s.header(0, -150, "Hit a refusal? The category picks the path", "Read stop_details.category, then follow the row. Re-sending the same turn to the same model usually refuses again.");
+  const rows = [
+    ["cyber", "defensive security: pentesting,\nvuln research, malware analysis", "Cyber Verification Program (CVP)", "the organisation applies to Anthropic with its use case\nif approved, safeguards are adjusted for that organisation", C.blue],
+    ["bio", "life-sciences R&D", "Life Sciences Verification Program (LSVP)", "US organisations only today\nre-test first: Fable 5.1 lets medical and textbook questions through", C.green],
+    ["chemical · radiological ·\nnuclear · weapons", "nuclear medicine, radiation safety,\nindustrial chemistry, defence", "No verification program", "weapons uplift is a hard line in the Usage Policy\nreword away from weapons detail\nstill blocked? report the false positive to Anthropic", C.red],
+    ["frontier_llm ·\nreasoning_extraction", "benign ML work · prompts that ask\nfor reasoning in the output text", "Reword the prompt", "use thinking blocks (display: summarized)\ninstead of a <thinking> section in the answer\nstill blocked? Anthropic support + request ID", C.yellow],
+  ];
+  rows.forEach(([cat, who, pt, pb, col], i) => {
+    const y = i * 150;
+    s.card(`c${i}`, 0, y, cat, who, { w: 440, h: 125, color: col, align: "left", tfs: 20, bfs: 15 });
+    s.card(`p${i}`, 520, y, pt, pb, { w: 900, h: 125, color: [col[0], "#ffffff"], align: "left", bfs: 16 });
+    s.arrow(`c${i}`, "r", `p${i}`, "l");
+  });
+  s.card("bed", 0, 620, "Fallback on Bedrock: build it client-side", "Server-side fallbacks (\"default\") are Claude API only. On Bedrock, use the Anthropic SDK refusal-fallback middleware or retry on another model yourself.\nSome categories have a recommended fallback model; others don't, and the refusal stands. Reset the conversation before you retry.", { w: 1420, color: C.orange, align: "left", bfs: 16 });
+  s.text(0, 780, "Mythos 5.1 (same model as Fable 5.1, looser safeguards) is trusted access that Anthropic grants directly. AWS can't add customers.\nCheck which models and platforms CVP and LSVP cover on Anthropic's pages before you promise a customer a path.", { fs: 16, color: C.muted });
   return s;
 };
 
