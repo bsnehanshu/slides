@@ -221,6 +221,29 @@ D["c1g-safety-stages"] = () => {
   return s;
 };
 
+// C1h. Two kinds of evals ----------------------------------------------------
+D["c1h-two-kinds-of-evals"] = () => {
+  const s = new Scene();
+  s.header(0, -150, "Same word, two jobs: Anthropic's safety evals vs evals on Bedrock", "It's the same word for two different jobs, and they happen in different places.");
+  s.card("ha", 280, 0, "Anthropic's safety evals", "before release · run by Anthropic", { w: 640, h: 100, color: C.purple, bfs: 16 });
+  s.card("hb", 960, 0, "Evals on Bedrock", "your application · run in your AWS account", { w: 640, h: 100, color: C.orange, bfs: 16 });
+  const rows = [
+    ["Question", "Is this model safe to release at all,\nand which ASL safeguards does it need?", "Is this model good enough\nfor my application?"],
+    ["Who runs them", "Anthropic, plus third-party testers before release\n(government AI safety institutes, external evaluators)", "The customer or partner, e.g. with Bedrock's model\nevaluation tools (automatic, human or LLM-as-judge)"],
+    ["What's tested", "Dangerous capabilities (CBRN, cyber, autonomy)\nand alignment (deception, sabotage)", "Accuracy, relevance, tone, robustness and harmful\noutputs, on the customer's own data"],
+    ["Where results go", "The RSP decision and the\npublished system card (C1g)", "Which model or prompt to choose,\nand whether the app is ready"],
+  ];
+  const H = 110, G = 25, Y0 = 130;
+  rows.forEach(([label, a, b], i) => {
+    const y = Y0 + i * (H + G);
+    s.box(`l${i}`, 0, y, label, { w: 240, h: H, color: C.gray, fs: 19 });
+    s.box(`a${i}`, 280, y, a, { w: 640, h: H, color: C.purple, fs: 16 });
+    s.box(`b${i}`, 960, y, b, { w: 640, h: H, color: C.orange, fs: 16 });
+  });
+  s.text(0, Y0 + 4 * (H + G) + 10, "Sources: Anthropic Responsible Scaling Policy, Claude system cards, Amazon Bedrock User Guide \"Evaluate the performance of Amazon Bedrock resources\".", { fs: 16, color: C.muted });
+  return s;
+};
+
 // C2. How weights land in a Region ------------------------------------------
 D["c2-weights-to-region"] = () => {
   const s = new Scene();
