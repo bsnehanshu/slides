@@ -206,18 +206,41 @@ D["c1g-safety-stages"] = () => {
   const rows = [
     ["p1", "Pretraining", "Data filtering", "Removing harmful content, such as CBRN material, from the training data so the model never learns it.\nAnthropic has published research on this (C1f).", C.red],
     ["p2", "Post-training", "Constitutional AI, RLHF, character training", "These shape how Claude behaves and when it refuses.", C.orange],
-    ["p3", "During training and\nbefore release", "Safety evals", "Mostly before release, but also on checkpoints as training scales. They test for dangerous capabilities (CBRN, cyber, autonomy)\nand alignment problems (deception, sabotage). The results decide the ASL level, which decides what safeguards have to be in place before release.", C.blue],
+    ["p3", "During training and\nbefore release", "Safety evals and red teaming", "Mostly before release, but also on checkpoints as training scales. Automated evals, plus red teaming by Anthropic's Frontier Red Team,\noutside experts and the US and UK government AI institutes. They test for dangerous capabilities (CBRN, cyber, autonomy) and alignment\nproblems (deception, sabotage). The results decide the ASL level, which decides what safeguards have to be in place before release.", C.blue],
     ["p4", "Inference", "Classifiers, then your own guardrails", "Classifiers screen the input and stream-check the output, blocking mid-response if needed (C3b).\nOn top of that sit the customer's own guardrails, such as Amazon Bedrock Guardrails.", C.green],
-    ["p5", "After release", "Monitoring", "Monitoring, threat intelligence, a bug bounty, and re-running evals\nas new jailbreak or elicitation techniques appear.", C.purple],
+    ["p5", "After release", "Monitoring", "Monitoring, threat intelligence, a bug bounty (red teamers paid to find universal jailbreaks in the classifiers),\nand re-running evals as new jailbreak or elicitation techniques appear.", C.purple],
   ];
-  const H = 120, G = 45;
+  const H = 135, G = 45;
   rows.forEach(([id, stage, t, b, col], i) => {
     const y = i * (H + G);
     s.box(id, 0, y, stage, { w: 280, h: H, color: col, fs: 20 });
     s.card(`${id}d`, 340, y, t, b, { w: 1250, h: H, color: col, align: "left", bfs: 15 });
   });
   for (let i = 1; i < 5; i++) s.arrow(`p${i}`, "b", `p${i + 1}`, "t");
-  s.text(0, 5 * (H + G) + 10, "Sources: Anthropic Alignment blog \"Pretraining data filtering\" (Aug 2025), Claude's constitution, Anthropic Responsible Scaling Policy, Claude system cards.", { fs: 16, color: C.muted });
+  s.text(0, 5 * (H + G) + 10, "Sources: Anthropic Alignment blog \"Pretraining data filtering\" (Aug 2025), Claude's constitution, Anthropic Responsible Scaling Policy, Claude system cards,\nAnthropic \"Progress from our Frontier Red Team\" (Mar 2025), \"Constitutional Classifiers\" (Feb 2025) and the classifier bug bounty (May 2025).", { fs: 16, color: C.muted });
+  return s;
+};
+
+// C1h. Two kinds of evals ----------------------------------------------------
+D["c1h-two-kinds-of-evals"] = () => {
+  const s = new Scene();
+  s.header(0, -150, "Same word, two jobs: Anthropic's safety evals vs evals on Bedrock", "It's the same word for two different jobs, and they happen in different places.");
+  s.card("ha", 280, 0, "Anthropic's safety evals", "before release · run by Anthropic", { w: 640, h: 100, color: C.purple, bfs: 16 });
+  s.card("hb", 960, 0, "Evals on Bedrock", "your application · run in your AWS account", { w: 640, h: 100, color: C.orange, bfs: 16 });
+  const rows = [
+    ["Question", "Is this model safe to release at all,\nand which ASL safeguards does it need?", "Is this model good enough\nfor my application?"],
+    ["Who runs them", "Anthropic, plus third-party testers before release\n(government AI safety institutes, external evaluators)", "The customer or partner, e.g. with Bedrock's model\nevaluation tools (automatic, human or LLM-as-judge)"],
+    ["What's tested", "Dangerous capabilities (CBRN, cyber, autonomy)\nand alignment (deception, sabotage)", "Accuracy, relevance, tone, robustness and harmful\noutputs, on the customer's own data"],
+    ["Where results go", "The RSP decision and the\npublished system card (C1g)", "Which model or prompt to choose,\nand whether the app is ready"],
+  ];
+  const H = 110, G = 25, Y0 = 130;
+  rows.forEach(([label, a, b], i) => {
+    const y = Y0 + i * (H + G);
+    s.box(`l${i}`, 0, y, label, { w: 240, h: H, color: C.gray, fs: 19 });
+    s.box(`a${i}`, 280, y, a, { w: 640, h: H, color: C.purple, fs: 16 });
+    s.box(`b${i}`, 960, y, b, { w: 640, h: H, color: C.orange, fs: 16 });
+  });
+  s.text(0, Y0 + 4 * (H + G) + 10, "Sources: Anthropic Responsible Scaling Policy, Claude system cards, Amazon Bedrock User Guide \"Evaluate the performance of Amazon Bedrock resources\".", { fs: 16, color: C.muted });
   return s;
 };
 
