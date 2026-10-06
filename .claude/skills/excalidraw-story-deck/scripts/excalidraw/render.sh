@@ -5,7 +5,8 @@
 # (auto-detected under /opt/pw-browsers, or set CHROME=/path/to/chrome).
 set -euo pipefail
 SRC="$(cd "$(dirname "$0")" && pwd)"
-DIAGRAMS="$(realpath "$1")"; OUT="$(realpath -m "$2")"
+# No `realpath -m`: macOS realpath lacks it, so create the out dir first.
+DIAGRAMS="$(realpath "$1")"; mkdir -p "$2"; OUT="$(cd "$2" && pwd)"
 WORK="${EXC_WORK:-${TMPDIR:-/tmp}/excalidraw-story-deck}"
 mkdir -p "$WORK" "$OUT"
 cp "$SRC"/{package.json,package-lock.json,lib.js,entry.js,index.html,export.mjs} "$WORK"/
