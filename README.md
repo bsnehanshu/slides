@@ -10,6 +10,7 @@ https://bsnehanshu.github.io/slides/<deck-name>/
 
 ## Decks
 - [bedrock-whiteboard](https://bsnehanshu.github.io/slides/bedrock-whiteboard/) — **start here.** Claude on Bedrock as one Excalidraw story: the whole picture first, then six chapters (hardware, building the model, serving a request, calling Claude on Bedrock, where the data goes, a Claude Desktop example) and a recap. Updated for Opus 5.5 and Sonnet 5.5. Deep-link a slide with `#lineup`, `#c4`, etc.
+- [ai-to-production](https://bsnehanshu.github.io/slides/ai-to-production/) — Why AI features stall between prototype and production (Scale Up: Anthropic x AWS). Session 1 covers people, process, and technology, plus AWS customer stories. Session 2 covers the production checklist, the Generative AI product canvas, cost levers, a healthcare field story and common gotchas, with an appendix on Claude on AWS routes. The demo video isn't in the repo, so the demo slide plays nothing on Pages.
 
 ## Architecture diagrams
 Standalone diagrams live in [`architecture-diagrams/`](architecture-diagrams/), one folder each (SVG source + PNG export + README).
