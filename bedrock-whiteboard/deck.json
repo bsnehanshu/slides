@@ -163,8 +163,8 @@
    "img": "../architecture-diagrams/claude-anz-infra-excalidraw/diagrams/c1g-safety-stages.excalidraw.svg",
    "what": [
     "Pretraining filters CBRN content out of the data. Post-training (Constitutional AI, RLHF, character training) shapes behaviour and refusals",
-    "Safety evals on checkpoints and before release test dangerous capabilities and alignment. The result sets the ASL level and required safeguards",
-    "Inference: input and streaming output classifiers, then your own Bedrock Guardrails. After release: monitoring, threat intel, bug bounty, re-run evals"
+    "Safety evals and red teaming (Frontier Red Team, outside experts, US and UK government AI institutes) set the ASL level and required safeguards",
+    "Inference: input and streaming output classifiers, then your own Bedrock Guardrails. After release: monitoring, threat intel, a jailbreak bug bounty, re-run evals"
    ],
    "say": "No single layer does it all. The data, the training, the evals, the live classifiers and your own guardrails each catch something different."
   },
