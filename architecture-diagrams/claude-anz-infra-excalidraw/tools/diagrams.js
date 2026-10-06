@@ -199,6 +199,28 @@ D["c1f-pretraining-data"] = () => {
   return s;
 };
 
+// C1g. Safety at every stage --------------------------------------------------
+D["c1g-safety-stages"] = () => {
+  const s = new Scene();
+  s.header(0, -150, "Safety at every stage, from data to after release", "Five layers, each catching what the one before it missed.");
+  const rows = [
+    ["p1", "Pretraining", "Data filtering", "Removing harmful content, such as CBRN material, from the training data so the model never learns it.\nAnthropic has published research on this (C1f).", C.red],
+    ["p2", "Post-training", "Constitutional AI, RLHF, character training", "These shape how Claude behaves and when it refuses.", C.orange],
+    ["p3", "During training and\nbefore release", "Safety evals", "Mostly before release, but also on checkpoints as training scales. They test for dangerous capabilities (CBRN, cyber, autonomy)\nand alignment problems (deception, sabotage). The results decide the ASL level, which decides what safeguards have to be in place before release.", C.blue],
+    ["p4", "Inference", "Classifiers, then your own guardrails", "Classifiers screen the input and stream-check the output, blocking mid-response if needed (C3b).\nOn top of that sit the customer's own guardrails, such as Amazon Bedrock Guardrails.", C.green],
+    ["p5", "After release", "Monitoring", "Monitoring, threat intelligence, a bug bounty, and re-running evals\nas new jailbreak or elicitation techniques appear.", C.purple],
+  ];
+  const H = 120, G = 45;
+  rows.forEach(([id, stage, t, b, col], i) => {
+    const y = i * (H + G);
+    s.box(id, 0, y, stage, { w: 280, h: H, color: col, fs: 20 });
+    s.card(`${id}d`, 340, y, t, b, { w: 1250, h: H, color: col, align: "left", bfs: 15 });
+  });
+  for (let i = 1; i < 5; i++) s.arrow(`p${i}`, "b", `p${i + 1}`, "t");
+  s.text(0, 5 * (H + G) + 10, "Sources: Anthropic Alignment blog \"Pretraining data filtering\" (Aug 2025), Claude's constitution, Anthropic Responsible Scaling Policy, Claude system cards.", { fs: 16, color: C.muted });
+  return s;
+};
+
 // C2. How weights land in a Region ------------------------------------------
 D["c2-weights-to-region"] = () => {
   const s = new Scene();
