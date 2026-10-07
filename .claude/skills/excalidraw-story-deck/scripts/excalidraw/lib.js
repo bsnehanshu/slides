@@ -136,9 +136,197 @@ class Scene {
     this.text(x, y, title, { fs: 34, id: "title" });
     if (sub) this.text(x, y + 48, sub, { fs: 20, color: C.muted, id: "subtitle" });
   }
+
+  // --- Story kit: icons, people, bubbles, badges, panels, legends ---------------------------
+  _shape(type, x, y, w, h, o = {}) {
+    return this._base(type, o.id || this._id("s"), x, y, w, h, { stroke: o.stroke, fill: o.fill, sw: o.sw,
+      dashed: o.dashed, groupIds: o.groupIds, roundness: type === "rectangle" ? (o.sharp ? null : { type: 3 }) : { type: 2 } });
+  }
+  // Polyline; closed and filled when o.fill is set.
+  _poly(pts, o = {}) {
+    if (o.fill && o.fill !== "transparent") pts = [...pts, pts[0]];
+    const p0 = pts[0]; const xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]);
+    const e = this._base("line", o.id || this._id("l"), p0[0], p0[1], Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys),
+      { stroke: o.stroke || C.ink, fill: o.fill, sw: o.sw, dashed: o.dashed, roundness: o.round ? { type: 2 } : null, groupIds: o.groupIds });
+    Object.assign(e, { points: pts.map((p) => [p[0] - p0[0], p[1] - p0[1]]), lastCommittedPoint: null, polygon: !!o.fill,
+      startBinding: null, endBinding: null, startArrowhead: null, endArrowhead: null });
+    return e;
+  }
+  // Icon drawn in a 60x60 box at (x, y), scaled by o.size. o.id adds an invisible anchor that arrows can bind to.
+  // o.label puts a caption underneath; o.color overrides the kind's default [stroke, fill].
+  icon(kind, x, y, o = {}) {
+    const S = o.size || 60, u = S / 60, G = [o.group || `g-${this._id("ic")}`];
+    const def = ICONS[kind]; if (!def) throw new Error(`unknown icon: ${kind}`);
+    const [st, fl] = o.color || def.color || [C.ink, "#ffffff"];
+    if (o.id) this._shape("rectangle", x, y, S, S, { id: o.id, stroke: "transparent", fill: "transparent", groupIds: G, sharp: true });
+    const I = {
+      st, fl, u,
+      R: (px, py, w, h, q = {}) => this._shape("rectangle", x + px * u, y + py * u, w * u, h * u, { stroke: q.stroke || st, fill: q.fill ?? fl, sw: q.sw, sharp: q.sharp, groupIds: G }),
+      E: (px, py, w, h, q = {}) => this._shape("ellipse", x + px * u, y + py * u, w * u, h * u, { stroke: q.stroke || st, fill: q.fill ?? fl, sw: q.sw, groupIds: G }),
+      L: (pts, q = {}) => this._poly(pts.map(([a, b]) => [x + a * u, y + b * u]), { stroke: q.stroke || st, fill: q.fill, sw: q.sw, round: q.round, groupIds: G }),
+      T: (px, py, str, fs, q = {}) => { const f = Math.max(10, fs * u); return this.text(x + px * u, y + py * u - (f * LH) / 2, str, { fs: f, align: "center", color: q.color || st, groupIds: G }); },
+    };
+    def.draw(I, o);
+    if (o.label) this.text(x + S / 2, y + S + 6, o.label, { fs: o.lfs || 16, align: "center", color: o.labelColor || C.ink, groupIds: G });
+    return { x, y, w: S, h: S };
+  }
+  // Row of the same icon, e.g. a crowd of people or a stack of chips.
+  icons(kind, x, y, n, o = {}) {
+    const S = o.size || 60, gap = o.gap ?? 8;
+    for (let i = 0; i < n; i++) this.icon(kind, x + i * (S + gap), y, { ...o, label: undefined });
+    if (o.label) this.text(x + (n * (S + gap) - gap) / 2, y + S + 6, o.label, { fs: o.lfs || 16, align: "center", color: o.labelColor || C.ink });
+  }
+  // Speech bubble with a tail on the bottom-left (o.tail: "bl" | "br" | "tl" | "tr").
+  bubble(id, x, y, str, o = {}) {
+    const fs = o.fs || 17, pad = o.pad || 12; const m = measure(str, fs);
+    const w = o.w || m.w + pad * 2, h = o.h || m.h + pad * 2;
+    const [stroke, fill] = o.color || [C.ink, "#ffffff"]; const G = [`g-${id}`];
+    const tail = o.tail || "bl";
+    const tx = tail.endsWith("l") ? x + 18 : x + w - 18, top = tail.startsWith("t");
+    const ty = top ? y : y + h, dy = top ? -16 : 16, dx = tail.endsWith("l") ? -4 : 4;
+    this._poly([[tx, ty], [tx + dx, ty + dy], [tx + (tail.endsWith("l") ? 14 : -14), ty]], { stroke, fill, groupIds: G });
+    const e = this._shape("rectangle", x, y, w, h, { id, stroke, fill, groupIds: G });
+    const t = this._bound(e, str, fs, o.textColor); t.x = x + (w - m.w) / 2; t.y = y + (h - m.h) / 2; t.groupIds = G;
+    return e;
+  }
+  // Numbered circle, like the step markers on a hand-drawn story.
+  badge(x, y, n, o = {}) {
+    const S = o.size || 34; const [stroke, fill] = o.color || [C.ink, C.yellow[1]];
+    const G = [`g-${this._id("bd")}`];
+    this._shape("ellipse", x, y, S, S, { stroke, fill, groupIds: G });
+    const fs = o.fs || Math.round(S * 0.55); const m = measure(String(n), fs);
+    this.text(x + S / 2, y + (S - m.h) / 2, String(n), { fs, align: "center", groupIds: G });
+  }
+  // Story panel: a big rounded frame with a numbered badge and a title in the top-left corner.
+  panel(id, x, y, w, h, n, title, o = {}) {
+    const [stroke, fill] = o.color || [C.ink, "transparent"];
+    const e = this._shape("rectangle", x, y, w, h, { id, stroke, fill, sw: o.sw || 2, dashed: o.dashed });
+    let tx = x + 18;
+    if (n !== null && n !== undefined) { this.badge(x + 14, y + 14, n); tx = x + 58; }
+    if (title) this.text(tx, y + 17, title, { fs: o.fs || 22, color: o.titleColor || C.ink });
+    return e;
+  }
+  // Legend chips: [[label, C.red], ...] laid out left to right.
+  legend(items, x, y, o = {}) {
+    let cx = x; const fs = o.fs || 16;
+    for (const [label, [stroke, fill]] of items) {
+      this._shape("rectangle", cx, y, 20, 20, { stroke, fill });
+      this.text(cx + 28, y - 1, label, { fs, color: C.ink });
+      cx += 28 + measure(label, fs).w + (o.gap || 36);
+    }
+  }
+  // Small tag label (e.g. "external", "us.* profile").
+  tag(id, x, y, str, o = {}) {
+    return this.box(id, x, y, str, { fs: o.fs || 14, pad: o.pad || 7, color: o.color || [C.teal[0], "#ffffff"], ...o });
+  }
+  // Red strike-through line, for "not this".
+  strike(x1, y, x2, o = {}) { return this._poly([[x1, y], [x2, y]], { stroke: o.stroke || C.red[0], sw: o.sw || 3 }); }
   toJSON() {
     return { type: "excalidraw", version: 2, source: "https://excalidraw.com", elements: this.els,
       appState: { gridSize: 20, viewBackgroundColor: "#ffffff" }, files: {} };
   }
 }
-window.Scene = Scene; window.C = C;
+// Icon library. Each draw() works in a 60x60 box; R/E/L/T are rect, ellipse, polyline and centred text.
+const ring = (cx, cy, r, a0, a1, n = 12) => Array.from({ length: n + 1 }, (_, i) => {
+  const a = a0 + ((a1 - a0) * i) / n; return [cx + r * Math.cos(a), cy + r * Math.sin(a)];
+});
+const ICONS = {
+  person: { color: [C.blue[0], C.blue[1]], draw: (I) => {
+    I.E(22, 2, 16, 16); I.L([[30, 18], [30, 40]]); I.L([[17, 33], [30, 25], [43, 33]]); I.L([[20, 58], [30, 40], [40, 58]]);
+  } },
+  people: { color: [C.blue[0], C.blue[1]], draw: (I) => {
+    for (const [dx, dy] of [[-14, 6], [14, 6], [0, 0]]) {
+      I.E(25 + dx, 4 + dy, 10, 10); I.L([[30 + dx, 14 + dy], [30 + dx, 32 + dy]]);
+      I.L([[22 + dx, 26 + dy], [30 + dx, 20 + dy], [38 + dx, 26 + dy]]); I.L([[24 + dx, 46 + dy], [30 + dx, 32 + dy], [36 + dx, 46 + dy]]);
+    }
+  } },
+  globe: { color: [C.blue[0], C.blue[1]], draw: (I) => {
+    I.E(4, 4, 52, 52); I.E(19, 4, 22, 52, { fill: "transparent" }); I.L([[4, 30], [56, 30]]);
+    I.L([[9, 17], [51, 17]]); I.L([[9, 43], [51, 43]]);
+  } },
+  phone: { color: [C.ink, "#ffffff"], draw: (I) => { I.R(16, 2, 28, 56); I.E(27, 48, 6, 6); I.L([[25, 8], [35, 8]]); } },
+  laptop: { color: [C.ink, "#ffffff"], draw: (I, o) => {
+    I.R(8, 6, 44, 32); I.L([[2, 48], [8, 40], [52, 40], [58, 48]], { fill: "#ffffff" }); I.T(30, 22, o.glyph || "</>", 14);
+  } },
+  terminal: { color: [C.ink, "#343a40"], draw: (I) => { I.R(2, 8, 56, 44); I.T(22, 30, ">_", 18, { color: "#ffffff" }); } },
+  doc: { color: [C.ink, "#ffffff"], draw: (I) => {
+    I.R(10, 2, 40, 56, { sharp: true }); for (const y of [14, 22, 30, 38, 46]) I.L([[18, y], [42, y]], { sw: 1 });
+  } },
+  docs: { color: [C.ink, "#ffffff"], draw: (I) => {
+    I.R(4, 10, 34, 46, { sharp: true }); I.R(14, 4, 34, 46, { sharp: true }); I.R(24, -2, 34, 46, { sharp: true });
+    for (const y of [10, 18, 26, 34]) I.L([[31, y], [51, y]], { sw: 1 });
+  } },
+  shield: { color: [C.orange[0], C.orange[1]], draw: (I) => { I.L([[30, 2], [54, 10], [52, 34], [30, 58], [8, 34], [6, 10]], { fill: I.fl }); } },
+  lock: { color: [C.orange[0], C.orange[1]], draw: (I) => {
+    I.L([[18, 28], ...ring(30, 22, 12, Math.PI, 2 * Math.PI, 8), [42, 28]], { round: true });
+    I.R(10, 26, 40, 30); I.E(26, 35, 8, 8, { fill: I.st });
+  } },
+  key: { color: [C.orange[0], C.orange[1]], draw: (I) => {
+    I.E(2, 18, 22, 22); I.L([[24, 29], [58, 29]], { sw: 3 }); I.L([[46, 29], [46, 39]], { sw: 3 }); I.L([[54, 29], [54, 37]], { sw: 3 });
+  } },
+  eye: { color: [C.orange[0], C.orange[1]], draw: (I) => {
+    I.L([[2, 30], [16, 18], [30, 14], [44, 18], [58, 30], [44, 42], [30, 46], [16, 42]], { fill: I.fl, round: true });
+    I.E(20, 20, 20, 20, { fill: "#ffffff" }); I.E(25, 25, 10, 10, { fill: I.st });
+  } },
+  chip: { color: [C.teal[0], C.teal[1]], draw: (I, o) => {
+    for (const p of [20, 30, 40]) {
+      I.L([[p, 4], [p, 12]]); I.L([[p, 48], [p, 56]]); I.L([[4, p], [12, p]]); I.L([[48, p], [56, p]]);
+    }
+    I.R(12, 12, 36, 36, { sharp: true }); if (o.glyph) I.T(30, 30, o.glyph, 12, { color: C.ink }); else I.R(22, 22, 16, 16, { sharp: true, fill: "#ffffff" });
+  } },
+  ram: { color: [C.teal[0], C.teal[1]], draw: (I) => {
+    I.R(2, 16, 56, 26, { sharp: true }); for (const px of [8, 21, 34, 47]) I.R(px, 21, 8, 12, { sharp: true, fill: "#ffffff" });
+    for (const px of [10, 18, 26, 34, 42, 50]) I.L([[px, 42], [px, 48]]);
+  } },
+  rack: { color: [C.gray[0], C.gray[1]], draw: (I) => {
+    I.R(12, 2, 36, 56, { sharp: true });
+    for (const py of [7, 20, 33, 46]) { I.R(16, py, 28, 9, { sharp: true, fill: "#ffffff" }); I.E(38, py + 3, 4, 4, { fill: C.green[0], stroke: C.green[0] }); }
+  } },
+  building: { color: [C.gray[0], C.gray[1]], draw: (I) => {
+    I.R(6, 12, 48, 46, { sharp: true }); I.L([[6, 12], [30, 2], [54, 12]]);
+    for (const py of [20, 32]) for (const px of [13, 26, 39]) I.R(px, py, 8, 8, { sharp: true, fill: "#ffffff" });
+    I.R(25, 44, 10, 14, { sharp: true, fill: "#ffffff" });
+  } },
+  cloud: { color: [C.blue[0], C.blue[1]], draw: (I) => {
+    I.L([[12, 46], [4, 38], [8, 28], [18, 25], [22, 15], [34, 10], [45, 16], [48, 25], [56, 31], [56, 41], [48, 46]], { fill: I.fl, round: true });
+  } },
+  db: { color: [C.orange[0], C.orange[1]], draw: (I) => {
+    I.R(8, 11, 44, 40, { sharp: true, stroke: "transparent" });
+    I.L([[8, 11], [8, 49]]); I.L([[52, 11], [52, 49]]); I.L(ring(30, 49, 22, 0, Math.PI, 8).map(([a, b]) => [a, 49 + (b - 49) * 0.35]), { round: true, fill: I.fl });
+    I.L(ring(30, 30, 22, 0, Math.PI, 8).map(([a, b]) => [a, 30 + (b - 30) * 0.35]), { round: true, sw: 1 });
+    I.E(8, 4, 44, 14);
+  } },
+  coin: { color: [C.orange[0], C.orange[1]], draw: (I, o) => { I.E(4, 4, 52, 52); I.T(30, 30, o.glyph || "$", 30); } },
+  clock: { color: [C.green[0], C.green[1]], draw: (I) => { I.E(4, 4, 52, 52); I.L([[30, 30], [30, 13]], { sw: 3 }); I.L([[30, 30], [43, 37]], { sw: 3 }); } },
+  check: { color: [C.green[0], "transparent"], draw: (I) => { I.L([[6, 32], [24, 50], [54, 10]], { sw: 4 }); } },
+  cross: { color: [C.red[0], "transparent"], draw: (I) => { I.L([[10, 10], [50, 50]], { sw: 4 }); I.L([[50, 10], [10, 50]], { sw: 4 }); } },
+  no: { color: [C.red[0], "transparent"], draw: (I) => { I.E(4, 4, 52, 52, { sw: 3 }); I.L([[12, 12], [48, 48]], { sw: 3 }); } },
+  gear: { color: [C.gray[0], C.gray[1]], draw: (I) => {
+    for (let k = 0; k < 8; k++) { const a = (k * Math.PI) / 4; I.L([[30 + 17 * Math.cos(a), 30 + 17 * Math.sin(a)], [30 + 27 * Math.cos(a), 30 + 27 * Math.sin(a)]], { sw: 6 }); }
+    I.E(12, 12, 36, 36); I.E(23, 23, 14, 14, { fill: "#ffffff" });
+  } },
+  bolt: { color: [C.yellow[0], C.yellow[1]], draw: (I) => { I.L([[36, 2], [10, 34], [28, 34], [22, 58], [50, 22], [32, 22]], { fill: I.fl }); } },
+  search: { color: [C.ink, "#ffffff"], draw: (I) => { I.E(4, 4, 36, 36); I.L([[35, 35], [56, 56]], { sw: 5 }); } },
+  warning: { color: [C.yellow[0], C.yellow[1]], draw: (I) => { I.L([[30, 4], [58, 54], [2, 54]], { fill: I.fl }); I.T(30, 36, "!", 26, { color: C.ink }); } },
+  claude: { color: [C.purple[0], C.purple[1]], draw: (I) => {
+    for (let k = 0; k < 12; k++) { const a = (k * Math.PI) / 6, r = k % 2 ? 18 : 27; I.L([[30, 30], [30 + r * Math.cos(a), 30 + r * Math.sin(a)]], { sw: 4 }); }
+  } },
+  play: { color: [C.green[0], C.green[1]], draw: (I) => { I.L([[4, 10], [30, 30], [4, 50]], { fill: I.fl }); I.L([[30, 10], [56, 30], [30, 50]], { fill: I.fl }); } },
+  pin: { color: [C.orange[0], C.orange[1]], draw: (I) => {
+    I.L([[30, 58], [14, 34], [10, 22], [15, 10], [30, 3], [45, 10], [50, 22], [46, 34]], { fill: I.fl, round: true }); I.E(22, 14, 16, 16, { fill: "#ffffff" });
+  } },
+  gauge: { color: [C.ink, "#ffffff"], draw: (I) => {
+    I.L(ring(30, 46, 26, Math.PI, 2 * Math.PI, 10), { round: true }); I.L([[4, 46], [56, 46]]);
+    I.L(ring(30, 46, 26, 1.65 * Math.PI, 2 * Math.PI, 4), { round: true, sw: 5, stroke: C.red[0] });
+    I.L([[30, 46], [44, 26]], { sw: 3 }); I.E(26, 42, 8, 8, { fill: I.st });
+  } },
+  flag: { color: [C.red[0], C.red[1]], draw: (I) => { I.L([[12, 58], [12, 4]], { sw: 3, stroke: C.ink }); I.L([[12, 6], [52, 12], [40, 22], [52, 32], [12, 30]], { fill: I.fl }); } },
+  mail: { color: [C.ink, "#ffffff"], draw: (I) => { I.R(4, 12, 52, 36, { sharp: true }); I.L([[4, 12], [30, 34], [56, 12]]); } },
+  bucket: { color: [C.blue[0], C.blue[1]], draw: (I) => { I.L([[6, 10], [12, 56], [48, 56], [54, 10]], { fill: I.fl }); I.E(6, 4, 48, 12, { fill: "#ffffff" }); } },
+  scale: { color: [C.ink, "#ffffff"], draw: (I) => {
+    I.L([[30, 6], [30, 54]], { sw: 3 }); I.L([[18, 54], [42, 54]], { sw: 3 }); I.L([[6, 14], [54, 14]], { sw: 3 });
+    I.L([[2, 34], [10, 14], [18, 34]]); I.L([[42, 34], [50, 14], [58, 34]]);
+    I.L(ring(10, 34, 8, 0, Math.PI, 6), { fill: C.yellow[1], round: true }); I.L(ring(50, 34, 8, 0, Math.PI, 6), { fill: C.yellow[1], round: true });
+  } },
+};
+window.Scene = Scene; window.C = C; window.ICONS = ICONS;
